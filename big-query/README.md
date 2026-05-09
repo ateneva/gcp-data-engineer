@@ -1,14 +1,10 @@
 # BigQuery Setup
 
-<!-- TOC -->
-
 - [BigQuery Setup](#bigquery-setup)
-    - [Gemini permissions](#gemini-permissions)
-    - [Dataform permissions](#dataform-permissions)
-    - [BQ Antipatterns](#bq-antipatterns)
-    - [BQ best practices](#bq-best-practices)
-
-<!-- /TOC -->
+  - [Gemini permissions](#gemini-permissions)
+  - [Dataform permissions](#dataform-permissions)
+  - [BQ Antipatterns](#bq-antipatterns)
+  - [BQ best practices](#bq-best-practices)
 
 ## Gemini permissions
 
