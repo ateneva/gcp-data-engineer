@@ -1,0 +1,11 @@
+[tool.pylint.messages_control]
+disable = [
+    "E0401",  # disable to import airflow
+    "C0301",  # disable line too long
+    "W0718",  # disable ungrouped exception in except statement
+    "R0801",  # disable similar lines in 2 files
+    "W3101"   # disable missing timeout in requests.get
+]
+
+[tool.ruff.format]
+quote-style = "double"
