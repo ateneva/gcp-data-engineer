@@ -1,14 +1,14 @@
 # BigQuery Setup
 
 - [BigQuery Setup](#bigquery-setup)
-  - [Setting up Gemini in BigQuery](#setting-up-gemini-in-bigquery)
-  - [Setting up Dataform in BigQuery](#setting-up-dataform-in-bigquery)
-  - [Setting up INFORMATION\_SCHEMA access](#setting-up-information_schema-access)
-    - [Identifying most expensive jobs](#identifying-most-expensive-jobs)
+  - [Set up Gemini in BigQuery](#set-up-gemini-in-bigquery)
+  - [Set up Dataform in BigQuery](#set-up-dataform-in-bigquery)
+  - [Set up access to INFORMATION SCHEMA](#set-up-access-to-information-schema)
+    - [Identify most expensive jobs](#identify-most-expensive-jobs)
   - [BQ Antipatterns](#bq-antipatterns)
   - [BQ best practices](#bq-best-practices)
 
-## Setting up Gemini in BigQuery
+## Set up Gemini in BigQuery
 
 Gemini in BQ requires the following permissions
 
@@ -21,7 +21,7 @@ cloudaicompanion.operations.get
 cloudaicompanion.topics.create
 ```
 
-## Setting up Dataform in BigQuery
+## Set up Dataform in BigQuery
 
 ```bash
 roles/bigquery.dataEditor
@@ -29,7 +29,7 @@ roles/bigquery.jobUser
 roles/bigquery.dataViewer
 ```
 
-## [Setting up INFORMATION_SCHEMA access](https://cloud.google.com/bigquery/docs/information-schema-tables#advanced_example)
+## [Set up access to INFORMATION SCHEMA](https://cloud.google.com/bigquery/docs/information-schema-tables#advanced_example)
 
 ```bash
 roles/bigquery.admin
@@ -37,7 +37,7 @@ roles/bigquery.dataViewer
 roles/bigquery.metadataViewer
 ```
 
-### Identifying most expensive jobs
+### Identify most expensive jobs
 
 ```sql
 SELECT
