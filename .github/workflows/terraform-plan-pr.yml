@@ -1,0 +1,130 @@
+name: Terraform plan on PR
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+jobs:
+  terraform-plan:
+    name: Run terraform plan for changed Terraform directories
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Find changed Terraform files
+        id: find_tf
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) {
+              core.setOutput('has_changes', 'false');
+              core.setOutput('dirs', '');
+              return;
+            }
+            const files = await github.paginate(github.rest.pulls.listFiles, { owner: context.repo.owner, repo: context.repo.repo, pull_number: pr.number });
+            const tfFiles = files.filter(f => f.filename.match(/\.(tf|tfvars|tf.json)$/));
+            const dirs = [...new Set(tfFiles.map(f => {
+              const idx = f.filename.lastIndexOf('/');
+              return idx === -1 ? '.' : f.filename.slice(0, idx);
+            }))];
+            core.setOutput('has_changes', dirs.length ? 'true' : 'false');
+            core.setOutput('dirs', dirs.join('\n'));
+
+      - name: Skip if no Terraform changes
+        if: steps.find_tf.outputs.has_changes == 'false'
+        run: |
+          echo "No Terraform changes detected in this PR. Exiting."
+
+      - name: Setup Terraform
+        if: steps.find_tf.outputs.has_changes == 'true'
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: '1.6.0'
+
+      - name: Run terraform plan(s) and build summary
+        if: steps.find_tf.outputs.has_changes == 'true'
+        id: plan
+        run: |
+          set -euo pipefail
+          echo "Preparing plan summary..."
+          SUMMARY_FILE="plan-summary.md"
+          echo "# Terraform plan summary for PR #${{ github.event.pull_request.number }}" > "$SUMMARY_FILE"
+          echo "Repository: ${{ github.repository }}" >> "$SUMMARY_FILE"
+          echo "" >> "$SUMMARY_FILE"
+
+          IFS=$'\n'
+          for dir in ${{ steps.find_tf.outputs.dirs }}; do
+            echo "Processing directory: '$dir'"
+            echo "---" >> "$SUMMARY_FILE"
+            echo "## Directory: $dir" >> "$SUMMARY_FILE"
+            echo "" >> "$SUMMARY_FILE"
+            pushd "$dir" > /dev/null || continue
+
+            # Initialize
+            terraform init -input=false -no-color >/dev/null
+
+            # Create plan
+            PLAN_FILE="tfplan"
+            PLAN_OUT="plan.txt"
+            terraform plan -input=false -no-color -out="$PLAN_FILE" > "$PLAN_OUT" || true
+
+            # Human-readable show
+            terraform show -no-color "$PLAN_FILE" > show.txt || true
+
+            # JSON show
+            terraform show -json "$PLAN_FILE" > plan.json || true
+
+            # Extract counts and resource lines using jq
+            if [ -s plan.json ]; then
+              create_count=$(jq '[.resource_changes[]? | select(.change.actions | index("create"))] | length' plan.json)
+              update_count=$(jq '[.resource_changes[]? | select(.change.actions | index("update"))] | length' plan.json)
+              delete_count=$(jq '[.resource_changes[]? | select(.change.actions | index("delete"))] | length' plan.json)
+              replace_count=$(jq '[.resource_changes[]? | select((.change.actions | index("create")) and (.change.actions | index("delete")))] | length' plan.json)
+
+              echo "**Summary:** $create_count to add, $update_count to change, $delete_count to destroy, $replace_count to replace" >> ../../$SUMMARY_FILE 2>/dev/null || echo "**Summary:** $create_count to add, $update_count to change, $delete_count to destroy, $replace_count to replace" >> $SUMMARY_FILE
+
+              echo "" >> ../../$SUMMARY_FILE 2>/dev/null || true
+
+              echo "<details><summary>Resource changes</summary>" >> ../../$SUMMARY_FILE 2>/dev/null || true
+              echo "" >> ../../$SUMMARY_FILE 2>/dev/null || true
+              jq -r '.resource_changes[]? | "- " + (if (.change.actions | index("create")) then "+" elif (.change.actions | index("delete")) then "-" elif (.change.actions | index("update")) then "~" else "?" end) + " `" + .address + "` (" + (.change.actions | join(",")) + ")"' plan.json >> ../../$SUMMARY_FILE 2>/dev/null || true
+              echo "" >> ../../$SUMMARY_FILE 2>/dev/null || true
+              echo "</details>" >> ../../$SUMMARY_FILE 2>/dev/null || true
+
+              echo "<details><summary>Full plan output</summary>" >> ../../$SUMMARY_FILE 2>/dev/null || true
+              echo '' >> ../../$SUMMARY_FILE 2>/dev/null || true
+              echo '```' >> ../../$SUMMARY_FILE 2>/dev/null || true
+              cat show.txt >> ../../$SUMMARY_FILE 2>/dev/null || true
+              echo '```' >> ../../$SUMMARY_FILE 2>/dev/null || true
+              echo "" >> ../../$SUMMARY_FILE 2>/dev/null || true
+              echo "</details>" >> ../../$SUMMARY_FILE 2>/dev/null || true
+            else
+              echo "No plan.json for $dir; terraform plan may have failed or there are no changes." >> ../../$SUMMARY_FILE 2>/dev/null || echo "No plan.json for $dir; terraform plan may have failed or there are no changes." >> $SUMMARY_FILE
+            fi
+
+            popd > /dev/null || true
+          done
+
+          # Show summary to logs
+          echo "---- PLAN SUMMARY ----"
+          cat "$SUMMARY_FILE"
+          echo "---- END SUMMARY ----"
+
+          # Save path for next step
+          echo "summary_path=$SUMMARY_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Post or update PR comment with plan summary
+        if: steps.find_tf.outputs.has_changes == 'true'
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: ${{ steps.plan.outputs.summary_path }}
+          edit-mode: replace
