@@ -74,10 +74,33 @@ GCP provides visual dashboards natively in the console:
 
 ## References
 
-- <https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-setup>
+- [Billing Data Export Setup](https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-setup)
 
-- <https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-tables/focus-export>
+- [Focus Export](https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-tables/focus-export)
 
-- <https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-tables/standard-usage>
+- [Standard Usage Export](https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-tables/standard-usage)
 
-- <https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-tables/detailed-usage>
+- [Detailed Usage Export](https://docs.cloud.google.com/billing/docs/how-to/export-data-bigquery-tables/detailed-usage)
+
+> The detailed export includes granular cost information about the following services:
+
+- AlloyDB for PostgreSQL
+- App Engine
+- BigQuery
+- Bigtable
+- Cloud Data Fusion
+- Cloud Deploy
+- Cloud Run functions
+- Cloud Logging
+- Cloud Run
+- Cloud SQL
+- Cloud Storage
+- Compute Engine
+- Dataflow
+- Managed Service for Apache Spark Metastore
+- Firestore and Datastore
+- Google Kubernetes Engine (GKE)
+- Managed Microsoft AD
+- Memorystore for Redis
+- Secret Manager
+- Spanner
