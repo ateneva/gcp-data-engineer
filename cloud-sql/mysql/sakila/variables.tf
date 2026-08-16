@@ -1,6 +1,7 @@
 variable "gcp_project_id" {
   description = "Your GCP Project ID"
   type        = string
+  default     = "data-geeking-gcp"
 }
 
 variable "region" {
