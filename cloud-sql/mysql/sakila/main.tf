@@ -18,13 +18,13 @@ provider "google" {
 }
 
 # Generate a random suffix for the instance name (Cloud SQL names cannot be reused immediately after deletion)
-resource "random_id" "db_name_suffix" {
+resource "random_id" "db_suffix" {
   byte_length = 4
 }
 
 # 1. Cloud SQL Instance Configuration
 resource "google_sql_database_instance" "mysql_instance" {
-  name             = "sample-mysql-sakilla"
+  name             = "mysql-sakilla-db-${random_id.db_suffix.hex}"
   database_version = "MYSQL_8_0"
   region           = var.region
 
@@ -53,8 +53,8 @@ resource "google_sql_database_instance" "mysql_instance" {
 }
 
 # 2. Database Creation
-resource "google_sql_database" "sample_sakilla_db" {
-  name     = "app_db"
+resource "google_sql_database" "sakilla_db" {
+  name     = "sakilla_db"
   instance = google_sql_database_instance.mysql_instance.name
 }
 
@@ -66,7 +66,7 @@ resource "random_password" "db_password" {
 
 # 4. Database User
 resource "google_sql_user" "db_user" {
-  name     = "app_user"
+  name     = "sakilla_user"
   instance = google_sql_database_instance.mysql_instance.name
   password = random_password.db_password.result
 }
