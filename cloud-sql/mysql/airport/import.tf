@@ -22,8 +22,17 @@ locals {
 # 1. Fetch Cloud Storage objects dynamically for each SQL file
 data "google_storage_bucket_object" "sql_dumps" {
   for_each = local.sql_files
-
   name   = "gcp/databases/airport-db/${each.value}"
+  bucket = "data-engineer-in-training"
+}
+
+data "google_storage_bucket_object" "timezonedb" {
+  name   = "gcp/databases/timezonedb/timezonedb.sql"
+  bucket = "data-engineer-in-training"
+}
+
+data "google_storage_bucket_object" "world-db" {
+  name   = "gcp/databases/world-db/world.sql"
   bucket = "data-engineer-in-training"
 }
 
@@ -60,5 +69,58 @@ resource "null_resource" "airport_db_import" {
     google_sql_database.airport_db,
     google_storage_bucket_iam_member.import_airport_grant,
     data.google_storage_bucket_object.sql_dumps
+  ]
+}
+
+# 4. Execute the timezonedb import command after instance, database, and IAM permissions exist
+
+resource "null_resource" "timezonedb_import" {
+  # Trigger the import if the bucket object (file md5/version) changes or instance changes
+  triggers = {
+    sql_file_hash = data.google_storage_bucket_object.timezonedb.md5hash
+    instance_id   = google_sql_database_instance.mysql_airport_instance.id
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      gcloud sql import sql ${google_sql_database_instance.mysql_airport_instance.name} \
+        gs://${data.google_storage_bucket_object.timezonedb.bucket}/${data.google_storage_bucket_object.timezonedb.name} \
+        --database=${google_sql_database.airport_db.name} \
+        --project=${var.gcp_project_id} \
+        --quiet
+    EOT
+  }
+
+  depends_on = [
+    google_sql_database_instance.mysql_airport_instance,
+    google_sql_database.airport_db,
+    google_storage_bucket_iam_member.import_airport_grant,
+    data.google_storage_bucket_object.sql_dumps
+  ]
+}
+
+
+resource "null_resource" "world_import" {
+  # Trigger the import if the bucket object (file md5/version) changes or instance changes
+  triggers = {
+    sql_file_hash = data.google_storage_bucket_object.world-db.md5hash
+    instance_id   = google_sql_database_instance.mysql_airport_instance.id
+  }
+
+  provisioner "local-exec" {
+    command = <<EOT
+      gcloud sql import sql ${google_sql_database_instance.mysql_airport_instance.name} \
+        gs://${data.google_storage_bucket_object.world-db.bucket}/${data.google_storage_bucket_object.world-db.name} \
+        --database=${google_sql_database.airport_db.name} \
+        --project=${var.gcp_project_id} \
+        --quiet
+    EOT
+  }
+
+  depends_on = [
+    google_sql_database_instance.mysql_airport_instance,
+    google_sql_database.airport_db,
+    google_storage_bucket_iam_member.import_airport_grant,
+    data.google_storage_bucket_object.world-db
   ]
 }
