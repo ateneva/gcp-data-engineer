@@ -1,6 +1,6 @@
 # 1. Fetch Cloud Storage object for the SQL restore file
 data "google_storage_bucket_object" "dvdrental_restore" {
-  name   = "gcp/databases/dvdrental/restore.sql"
+  name   = "gcp/databases/dvdrental/dvdrental_full.sql"
   bucket = "data-engineer-in-training"
 }
 
