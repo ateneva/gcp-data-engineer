@@ -25,7 +25,7 @@ resource "random_id" "db_suffix" {
 # 1. Cloud SQL Instance Configuration
 resource "google_sql_database_instance" "mysql_airport_instance" {
   name             = "mysql-airport-db-${random_id.db_suffix.hex}"
-  database_version = "MYSQL_8_0"
+  database_version = "MYSQL_8_4"
   region           = var.region
 
   # Set to false so you can tear down the test environment with `terraform destroy`
