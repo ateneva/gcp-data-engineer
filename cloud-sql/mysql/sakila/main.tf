@@ -24,7 +24,7 @@ resource "random_id" "db_suffix" {
 
 # 1. Cloud SQL Instance Configuration
 resource "google_sql_database_instance" "mysql_instance" {
-  name             = "mysql-sakilla-db-${random_id.db_suffix.hex}"
+  name             = "mysql-sakila-db-${random_id.db_suffix.hex}"
   database_version = "MYSQL_8_4"
   region           = var.region
 
@@ -38,16 +38,33 @@ resource "google_sql_database_instance" "mysql_instance" {
     ip_configuration {
       ipv4_enabled = true
 
-      # Add authorized networks if you need direct external access, or rely on Cloud SQL Proxy
-      # authorized_networks {
-      #   name  = "my-ip"
-      #   value = "YOUR_PUBLIC_IP/32"
-      # }
+      # Authorize Datastream public IPs for europe-west1
+      authorized_networks {
+        name  = "datastream-1"
+        value = "34.76.23.102/32"
+      }
+      authorized_networks {
+        name  = "datastream-2"
+        value = "34.140.90.170/32"
+      }
+      authorized_networks {
+        name  = "datastream-3"
+        value = "34.140.108.199/32"
+      }
+      authorized_networks {
+        name  = "datastream-4"
+        value = "34.140.237.112/32"
+      }
+      authorized_networks {
+        name  = "datastream-5"
+        value = "34.140.173.91/32"
+      }
     }
 
     backup_configuration {
-      enabled    = true
-      start_time = "04:00"
+      enabled            = true
+      binary_log_enabled = true     # binary logs are needed for the stream to capture any CDC changes
+      start_time         = "04:00"
     }
   }
 }
