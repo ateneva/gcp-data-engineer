@@ -9,3 +9,10 @@ resource "google_bigquery_dataset" "eu-data-challenge" {
     env = "default"
   }
 }
+
+resource "google_bigquery_dataset" "sakilla" {
+  dataset_id                  = "sakilla"
+  friendly_name               = "sakilla"
+  description                 = "This dataset stores a copy of the sakila database that was datasstreamed"
+  location                    = "europe-west1"
+}
