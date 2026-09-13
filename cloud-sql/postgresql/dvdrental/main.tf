@@ -35,11 +35,37 @@ resource "google_sql_database_instance" "postgres_dvdrental_instance" {
 
     ip_configuration {
       ipv4_enabled = true
+      
+      authorized_networks {
+        name  = "datastream-1"
+        value = "104.199.6.64"
+      }
+      authorized_networks {
+        name  = "datastream-2"
+        value = "34.78.213.130"
+      }
+      authorized_networks {
+        name  = "datastream-3"
+        value = "35.205.33.30"
+      }
+      authorized_networks {
+        name  = "datastream-4"
+        value = "35.205.125.111"
+      }
+      authorized_networks {
+        name  = "datastream-5"
+        value = "35.187.27.174"
+      }
     }
 
     backup_configuration {
       enabled    = true
       start_time = "04:00"
+    }
+
+    database_flags {
+      name  = "cloudsql.logical_decoding"
+      value = "on"
     }
   }
 }
