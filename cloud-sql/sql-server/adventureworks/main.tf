@@ -3,7 +3,7 @@ terraform {
   required_providers {
     google = {
       source  = "hashicorp/google"
-      version = "~> 5.0"
+      version = "~> 6.0"
     }
     random = {
       source  = "hashicorp/random"
@@ -33,10 +33,32 @@ resource "google_sql_database_instance" "sqlserver_instance" {
 
   settings {
     # SQL Server requires a higher tier than MySQL/PostgreSQL micro instances
-    tier = "db-custom-2-3840" 
+    tier = "db-custom-2-3840"
 
     ip_configuration {
       ipv4_enabled = true
+
+      # Datastream Public IPs for europe-west1
+      authorized_networks {
+        name  = "datastream-1"
+        value = "104.199.6.64/32"
+      }
+      authorized_networks {
+        name  = "datastream-2"
+        value = "34.78.213.130/32"
+      }
+      authorized_networks {
+        name  = "datastream-3"
+        value = "35.205.33.30/32"
+      }
+      authorized_networks {
+        name  = "datastream-4"
+        value = "35.205.125.111/32"
+      }
+      authorized_networks {
+        name  = "datastream-5"
+        value = "35.187.27.174/32"
+      }
     }
 
     backup_configuration {
