@@ -26,16 +26,6 @@ output "db_password" {
 }
 
 # Datastream Resources Outputs
-output "datastream_staging_bucket_name" {
-  description = "Name of the GCS staging bucket for Datastream"
-  value       = google_storage_bucket.datastream_staging.name
-}
-
-output "datastream_staging_bucket_url" {
-  description = "URL of the GCS staging bucket for Datastream"
-  value       = google_storage_bucket.datastream_staging.url
-}
-
 output "datastream_bigquery_dataset_id" {
   description = "Dataset ID of the BigQuery destination for Datastream"
   value       = google_bigquery_dataset.sakila_bq.dataset_id

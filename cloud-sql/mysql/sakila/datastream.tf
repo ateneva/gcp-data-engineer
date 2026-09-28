@@ -1,16 +1,6 @@
 // Datastream: Sakila Cloud SQL -> BigQuery
 // This file creates Datastream resources that replicate the sakila Cloud SQL database into BigQuery.
 
-resource "random_id" "datastream_staging" {
-  byte_length = 4
-}
-
-resource "google_storage_bucket" "datastream_staging" {
-  name          = "${var.gcp_project_id}-datastream-staging-${random_id.datastream_staging.hex}"
-  location      = var.region
-  force_destroy = true
-}
-
 # create a BigQuery dataset for the Sakila database
 resource "google_bigquery_dataset" "sakila_bq" {
   dataset_id  = "sakila"
@@ -34,12 +24,6 @@ resource "google_project_iam_member" "datastream_admin" {
   project = var.gcp_project_id
   role    = "roles/datastream.admin"
   member  = "serviceAccount:${google_service_account.datastream_sa.email}"
-}
-
-resource "google_storage_bucket_iam_member" "datastream_bucket_writer" {
-  bucket = google_storage_bucket.datastream_staging.name
-  role   = "roles/storage.objectAdmin"
-  member = "serviceAccount:${google_service_account.datastream_sa.email}"
 }
 
 // Datastream connection profile: MySQL (Cloud SQL)
