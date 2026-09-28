@@ -1,3 +1,8 @@
+output "instance_name" {
+  description = "The name of the database instance"
+  value       = google_sql_database_instance.mysql_instance.name
+}
+
 output "instance_connection_name" {
   description = "Connection name used by Cloud SQL Proxy"
   value       = google_sql_database_instance.mysql_instance.connection_name

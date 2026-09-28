@@ -10,14 +10,18 @@
     - [Set up permissiions for the MySQL user](#set-up-permissiions-for-the-mysql-user)
     - [Deployment](#deployment)
 
-## Connecting via `root` user
+
+## Verify the database creation
 
 ```bash
-## generic command to connect to the Cloud SQL instance using the `root` user
-gcloud sql connect < instance name > --user=root --project=data-geeking-gcp
+terraform output
 
-## Example command to connect to the Cloud SQL instance using the `root` user
-gcloud sql connect mysql-sakilla-db-036eeb9d --user=root --project=data-geeking-gcp
+### output
+db_password = <sensitive>
+db_username = "sakilla_user"
+instance_connection_name = "data-geeking-gcp:europe-west1:mysql-sakila-db-d859ecce"
+instance_name = "mysql-sakila-db-d859ecce"
+public_ip_address = "104.199.84.229"
 ```
 
 ## Connecting via `sakilla` user
@@ -26,8 +30,14 @@ gcloud sql connect mysql-sakilla-db-036eeb9d --user=root --project=data-geeking-
 # 1. Print the generated password from your Terraform state
 terraform output -raw db_password
 
-# 2. Connect using the custom user
-gcloud sql connect mysql-sakilla-db-036eeb9d --user=sakilla_user --project=data-geeking-gcp
+# 2. Export MySQL instance name dynamically from Terraform:
+export MYSQL_INSTANCE=$(terraform output -raw instance_name)
+
+# 3. Verify the variable
+echo $MYSQL_INSTANCE
+
+# 4. Connect using the exported variable
+gcloud sql connect "$MYSQL_INSTANCE" --user=sakilla_user --project=data-geeking-gcp
 ```
 
 ---
