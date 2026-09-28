@@ -63,7 +63,7 @@ resource "google_sql_database_instance" "mysql_instance" {
 
     backup_configuration {
       enabled            = true
-      binary_log_enabled = true     # binary logs are needed for the stream to capture any CDC changes
+      binary_log_enabled = true # binary logs are needed for the stream to capture any CDC changes
       start_time         = "04:00"
     }
   }

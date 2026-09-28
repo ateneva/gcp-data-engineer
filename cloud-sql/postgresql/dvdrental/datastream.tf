@@ -58,7 +58,7 @@ resource "google_datastream_stream" "dvdrental_to_bq" {
 
   source_config {
     source_connection_profile = google_datastream_connection_profile.postgres_cp.id
-    
+
     postgresql_source_config {
       replication_slot = "dvdrental_slot"
       publication      = "dvdrental_publication"
@@ -72,7 +72,7 @@ resource "google_datastream_stream" "dvdrental_to_bq" {
 
   destination_config {
     destination_connection_profile = google_datastream_connection_profile.bq_cp.id
-    
+
     bigquery_destination_config {
       single_target_dataset {
         dataset_id = "${var.gcp_project_id}:${google_bigquery_dataset.dvdrental_bq.dataset_id}"

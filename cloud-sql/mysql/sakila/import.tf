@@ -1,12 +1,12 @@
 # 1. Fetch the Cloud Storage bucket and SQL dump object
 data "google_storage_bucket_object" "sakila-schema" {
   name   = "gcp/databases/sakila-db/sakila-schema.sql" # Folder path goes here if inside subfolders
-  bucket = "data-engineer-in-training"      # Bucket name ONLY (no slashes)
+  bucket = "data-engineer-in-training"                 # Bucket name ONLY (no slashes)
 }
 
 data "google_storage_bucket_object" "sakila-data" {
   name   = "gcp/databases/sakila-db/sakila-data.sql" # Folder path goes here if inside subfolders
-  bucket = "data-engineer-in-training"      # Bucket name ONLY (no slashes)
+  bucket = "data-engineer-in-training"               # Bucket name ONLY (no slashes)
 }
 
 # 2. Grant the Cloud SQL service account access to read from the bucket

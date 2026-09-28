@@ -22,8 +22,8 @@ locals {
 # 1. Fetch Cloud Storage objects dynamically for each SQL file
 data "google_storage_bucket_object" "sql_dumps" {
   for_each = local.sql_files
-  name   = "gcp/databases/airport-db/${each.value}"
-  bucket = "data-engineer-in-training"
+  name     = "gcp/databases/airport-db/${each.value}"
+  bucket   = "data-engineer-in-training"
 }
 
 data "google_storage_bucket_object" "timezonedb" {

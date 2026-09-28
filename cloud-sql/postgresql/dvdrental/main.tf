@@ -35,7 +35,7 @@ resource "google_sql_database_instance" "postgres_dvdrental_instance" {
 
     ip_configuration {
       ipv4_enabled = true
-      
+
       authorized_networks {
         name  = "datastream-1"
         value = "104.199.6.64"

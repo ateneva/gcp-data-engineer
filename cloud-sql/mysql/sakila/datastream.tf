@@ -13,8 +13,8 @@ resource "google_storage_bucket" "datastream_staging" {
 
 # create a BigQuery dataset for the Sakila database
 resource "google_bigquery_dataset" "sakila_bq" {
-  dataset_id = "sakila"
-  location   = var.region
+  dataset_id  = "sakila"
+  location    = var.region
   description = "This dataset stores streaming data from sakila mysql database"
 }
 
@@ -74,7 +74,7 @@ resource "google_datastream_stream" "sakila_to_bq" {
 
   source_config {
     source_connection_profile = google_datastream_connection_profile.mysql_cp.id
-    
+
     mysql_source_config {
       include_objects {
         mysql_databases {
@@ -86,7 +86,7 @@ resource "google_datastream_stream" "sakila_to_bq" {
 
   destination_config {
     destination_connection_profile = google_datastream_connection_profile.bq_cp.id
-    
+
     bigquery_destination_config {
       single_target_dataset {
         dataset_id = google_bigquery_dataset.sakila_bq.dataset_id
