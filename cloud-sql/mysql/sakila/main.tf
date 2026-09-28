@@ -86,9 +86,17 @@ resource "random_password" "db_password" {
   special = true
 }
 
-# 4. Database User
+# 4. Database User (allows remote connections e.g. Datastream and localhost for Cloud SQL Studio)
 resource "google_sql_user" "db_user" {
   name     = "sakilla_user"
   instance = google_sql_database_instance.mysql_instance.name
   password = random_password.db_password.result
+  host     = "%"
+}
+
+resource "google_sql_user" "db_user_localhost" {
+  name     = "sakilla_user"
+  instance = google_sql_database_instance.mysql_instance.name
+  password = random_password.db_password.result
+  host     = "localhost"
 }
