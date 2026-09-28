@@ -92,13 +92,28 @@ jobs:
             # Create plan (allow failure so we can report it)
             PLAN_FILE="tfplan"
             PLAN_OUT="plan.txt"
-            terraform plan -input=false -no-color -out="$PLAN_FILE" > "$PLAN_OUT" 2>&1 || true
+            if terraform plan -input=false -no-color -out="$PLAN_FILE" > "$PLAN_OUT" 2>&1; then
+              PLAN_EXIT_CODE=0
+            else
+              PLAN_EXIT_CODE=$?
+              echo "**terraform plan failed (exit code $PLAN_EXIT_CODE).**" >> "$SUMMARY_FILE"
+              echo '```' >> "$SUMMARY_FILE"
+              cat "$PLAN_OUT" >> "$SUMMARY_FILE"
+              echo '```' >> "$SUMMARY_FILE"
+            fi
 
-            # Human-readable show
-            terraform show -no-color "$PLAN_FILE" > show.txt 2>&1 || true
+            if [ "$PLAN_EXIT_CODE" -ne 0 ]; then
+              popd > /dev/null || true
+              continue
+            fi
 
-            # JSON show
-            terraform show -json "$PLAN_FILE" > plan.json 2>&1 || true
+            if [ "$PLAN_EXIT_CODE" -eq 0 ]; then
+              # Human-readable show
+              terraform show -no-color "$PLAN_FILE" > show.txt 2>&1 || true
+
+              # JSON show
+              terraform show -json "$PLAN_FILE" > plan.json 2>&1 || true
+            fi
 
             # Extract counts and resource lines using jq
             if [ -s plan.json ] && jq -e 'type == "object"' plan.json > /dev/null 2>&1; then
