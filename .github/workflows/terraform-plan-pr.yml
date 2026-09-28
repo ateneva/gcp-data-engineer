@@ -101,7 +101,7 @@ jobs:
             terraform show -json "$PLAN_FILE" > plan.json 2>&1 || true
 
             # Extract counts and resource lines using jq
-            if [ -s plan.json ]; then
+            if [ -s plan.json ] && jq -e 'type == "object"' plan.json > /dev/null 2>&1; then
               create_count=$(jq '[.resource_changes[]? | select(.change.actions | index("create"))] | length' plan.json)
               update_count=$(jq '[.resource_changes[]? | select(.change.actions | index("update"))] | length' plan.json)
               delete_count=$(jq '[.resource_changes[]? | select(.change.actions | index("delete"))] | length' plan.json)
@@ -125,12 +125,20 @@ jobs:
               echo "" >> "$SUMMARY_FILE"
               echo "</details>" >> "$SUMMARY_FILE"
             else
-              echo "No plan.json for $dir; terraform plan may have failed or there are no changes." >> "$SUMMARY_FILE"
+              echo "No valid plan.json for $dir; terraform plan or terraform show may have failed." >> "$SUMMARY_FILE"
               if [ -s plan.txt ]; then
                 echo "" >> "$SUMMARY_FILE"
                 echo "<details><summary>Plan stdout/stderr</summary>" >> "$SUMMARY_FILE"
                 echo '```' >> "$SUMMARY_FILE"
                 cat plan.txt >> "$SUMMARY_FILE"
+                echo '```' >> "$SUMMARY_FILE"
+                echo "</details>" >> "$SUMMARY_FILE"
+              fi
+              if [ -s show.txt ]; then
+                echo "" >> "$SUMMARY_FILE"
+                echo "<details><summary>Terraform show output</summary>" >> "$SUMMARY_FILE"
+                echo '```' >> "$SUMMARY_FILE"
+                cat show.txt >> "$SUMMARY_FILE"
                 echo '```' >> "$SUMMARY_FILE"
                 echo "</details>" >> "$SUMMARY_FILE"
               fi
