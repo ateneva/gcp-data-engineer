@@ -1,4 +1,3 @@
-
 resource "google_bigquery_dataset" "billing" {
   dataset_id                  = "billing"
   friendly_name               = "Billing"
