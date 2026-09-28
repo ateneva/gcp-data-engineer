@@ -64,6 +64,8 @@ jobs:
       - name: Run terraform plan(s) and build summary
         if: steps.find_tf.outputs.has_changes == 'true'
         id: plan
+        env:
+          TERRAFORM_DIRS: ${{ steps.find_tf.outputs.dirs }}
         run: |
           set -euo pipefail
           echo "Preparing plan summary..."
@@ -76,8 +78,8 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y jq
 
-          IFS=$'\n'
-          for dir in ${{ steps.find_tf.outputs.dirs }}; do
+          while IFS= read -r dir; do
+            [ -n "$dir" ] || continue
             echo "Processing directory: '$dir'"
             echo "---" >> "$SUMMARY_FILE"
             echo "## Directory: $dir" >> "$SUMMARY_FILE"
@@ -135,7 +137,7 @@ jobs:
             fi
 
             popd > /dev/null || true
-          done
+          done <<< "$TERRAFORM_DIRS"
 
           # Show summary to logs
           echo "---- PLAN SUMMARY ----"
