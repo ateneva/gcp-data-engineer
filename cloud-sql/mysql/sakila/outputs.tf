@@ -16,11 +16,3 @@ output "db_password" {
   value     = random_password.db_password.result
   sensitive = true
 }
-
-output "datastream_name" {
-  value = google_datastream_stream.sakila_to_bq.name
-}
-
-output "bq_dataset" {
-  value = google_bigquery_dataset.sakila_bq.dataset_id
-}

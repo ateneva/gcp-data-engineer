@@ -41,23 +41,23 @@ resource "google_sql_database_instance" "mysql_instance" {
       # Authorize Datastream public IPs for europe-west1
       authorized_networks {
         name  = "datastream-1"
-        value = "34.76.23.102/32"
+        value = "104.199.6.64/32"
       }
       authorized_networks {
         name  = "datastream-2"
-        value = "34.140.90.170/32"
+        value = "34.78.213.130/32"
       }
       authorized_networks {
         name  = "datastream-3"
-        value = "34.140.108.199/32"
+        value = "35.205.33.30/32"
       }
       authorized_networks {
         name  = "datastream-4"
-        value = "34.140.237.112/32"
+        value = "35.205.125.111/32"
       }
       authorized_networks {
         name  = "datastream-5"
-        value = "34.140.173.91/32"
+        value = "35.187.27.174/32"
       }
     }
 
@@ -66,12 +66,17 @@ resource "google_sql_database_instance" "mysql_instance" {
       binary_log_enabled = true # binary logs are needed for the stream to capture any CDC changes
       start_time         = "04:00"
     }
+
+    database_flags {
+      name  = "log_bin_trust_function_creators"
+      value = "on"
+    }
   }
 }
 
 # 2. Database Creation
 resource "google_sql_database" "sakilla_db" {
-  name     = "sakilla_db"
+  name     = "sakila"
   instance = google_sql_database_instance.mysql_instance.name
 }
 

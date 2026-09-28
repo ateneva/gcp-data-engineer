@@ -58,8 +58,8 @@ resource "google_datastream_connection_profile" "mysql_cp" {
 
 // Datastream connection profile: BigQuery destination
 resource "google_datastream_connection_profile" "bq_cp" {
-  connection_profile_id = "bigquery-destination-cp"
-  display_name          = "bigquery-destination-cp"
+  connection_profile_id = "sakila-bigquery-cp"
+  display_name          = "sakila-bigquery-cp"
   location              = var.region
   bigquery_profile {}
 }
@@ -89,7 +89,7 @@ resource "google_datastream_stream" "sakila_to_bq" {
 
     bigquery_destination_config {
       single_target_dataset {
-        dataset_id = google_bigquery_dataset.sakila_bq.dataset_id
+        dataset_id = "${var.gcp_project_id}:${google_bigquery_dataset.sakila_bq.dataset_id}"
       }
     }
   }
