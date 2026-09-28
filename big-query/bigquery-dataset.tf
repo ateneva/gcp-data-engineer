@@ -13,6 +13,20 @@ resource "google_bigquery_dataset" "eu-data-challenge" {
 resource "google_bigquery_dataset" "sakilla" {
   dataset_id                  = "sakilla"
   friendly_name               = "sakilla"
-  description                 = "This dataset stores a copy of the sakila database that was datasstreamed"
+  description                 = "This dataset stores a copy of the sakila database that was datastreamed"
+  location                    = "europe-west1"
+}
+
+resource "google_bigquery_dataset" "dvd_rental" {
+  dataset_id                  = "dvd_rental"
+  friendly_name               = "dvd_rental"
+  description                 = "This dataset stores a copy of the dvd_rental database that was datastreamed"
+  location                    = "europe-west1"
+}
+
+resource "google_bigquery_dataset" "advetureworks" {
+  dataset_id                  = "advetureworks"
+  friendly_name               = "advetureworks"
+  description                 = "This dataset stores a copy of the advetureworks database that was datastreamed"
   location                    = "europe-west1"
 }
