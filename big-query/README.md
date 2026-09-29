@@ -14,6 +14,12 @@
     - [How can I identify the most expensive jobs in my project?](#how-can-i-identify-the-most-expensive-jobs-in-my-project)
   - [BQ Antipatterns](#bq-antipatterns)
   - [BQ best practices](#bq-best-practices)
+  - [LOGICAL vs PHYSICAL Storage Billing](#logical-vs-physical-storage-billing)
+  - [Direct Comparison](#direct-comparison)
+  - [When to Choose Which](#when-to-choose-which)
+    - [Choose Physical Storage](#choose-physical-storage)
+    - [Choose Logical Storage](#choose-logical-storage)
+  - [How to Determine the Best Option for Your Dataset](#how-to-determine-the-best-option-for-your-dataset)
 
 ## Set up Gemini in BigQuery
 
@@ -175,3 +181,65 @@ ORDER BY
 - avoid unnecessary sorting in the query
 - monitor query performance and adjust as needed to avoid data skew and optimize resource usage
 - use materialized views or pre-aggregated tables for frequently accessed data to improve query performance
+
+## LOGICAL vs PHYSICAL Storage Billing
+
+Neither model is universally "better"—the right choice depends entirely on your data's **compression ratio** and how heavily you rely on **Time Travel** and **Fail-safe** storage.
+
+As a general rule, **Physical storage billing is cheaper for most datasets**, often saving between 30% to 70% on storage costs because columnar compression is highly effective.
+
+---
+
+## Direct Comparison
+
+| Feature / Metric | Logical Storage Billing | Physical Storage Billing |
+| --- | --- | --- |
+| **Pricing Base** | Uncompressed bytes | Compressed bytes after columnar encoding |
+| **Active Rate (US Multi-region)** | **$0.020** per GB / month | **$0.040** per GB / month |
+| **Long-term Rate (90+ days idle)** | **$0.010** per GB / month | **$0.020** per GB / month |
+| **Time Travel / Fail-safe Cost** | **Free** (Included in price) | **Billed** at active physical rates |
+| **Break-even Compression Threshold** | Requires **1:1** (No compression needed to match) | Requires **> 2:1 compression** (50% size reduction) to win |
+
+---
+
+## When to Choose Which
+
+### Choose Physical Storage
+
+1. *High Compression Ratio (>2:1):*
+   > Text, JSON, logs, wide tables, or repetitive structured data compress heavily (often 3:1 to 10:1), making physical storage significantly cheaper even at double the base rate per GB.
+
+2. *Low Data Churn:*
+   > Tables with infrequent updates produce minimal delta revisions in Time Travel and Fail-safe windows.
+
+### Choose Logical Storage
+
+1. *Heavy DML / High Data Churn:*
+   >If you constantly `UPDATE`, `DELETE`, or `MERGE` millions of rows, physical storage will bill you for all historical row versions kept in Time Travel (up to 7 days) and Fail-safe (7 days). This extra retention footprint can easily outweigh compression savings.
+
+2. *Pre-compressed Data:*
+   >Data containing high-cardinality random hashes, pre-compressed blobs, or encrypted fields will not compress well (<2:1 ratio).
+
+---
+
+## How to Determine the Best Option for Your Dataset
+
+Run BigQuery's built-in `INFORMATION_SCHEMA.TABLE_STORAGE` query on your existing dataset to evaluate exact cost differences before switching billing models:
+
+```sql
+SELECT
+  project_id,
+  dataset_id,
+  -- Logical Cost Estimation
+  ROUND(SUM(active_logical_bytes) / POWER(1024, 3) * 0.02, 2) AS estimated_active_logical_cost,
+
+  -- Physical Cost Estimation (includes Time Travel + Fail-safe)
+  ROUND(SUM(total_physical_bytes) / POWER(1024, 3) * 0.04, 2) AS estimated_total_physical_cost,
+
+  -- Savings Delta
+  ROUND((SUM(active_logical_bytes) * 0.02 - SUM(total_physical_bytes) * 0.04) / POWER(1024, 3), 2) AS monthly_savings_with_physical
+FROM
+  `YOUR_PROJECT_ID.region-us`.INFORMATION_SCHEMA.TABLE_STORAGE
+GROUP BY 1, 2;
+
+```
