@@ -68,11 +68,8 @@ jobs:
           TERRAFORM_DIRS: ${{ steps.find_tf.outputs.dirs }}
         run: |
           set -euo pipefail
-          echo "Preparing plan summary..."
           SUMMARY_FILE="${GITHUB_WORKSPACE:-.}/plan-summary.md"
-          echo "# Terraform plan summary for PR #${{ github.event.pull_request.number }}" > "$SUMMARY_FILE"
-          echo "Repository: ${{ github.repository }}" >> "$SUMMARY_FILE"
-          echo "" >> "$SUMMARY_FILE"
+          : > "$SUMMARY_FILE"
 
           echo "Installing jq (required for JSON parsing)..."
           sudo apt-get update -y
@@ -81,13 +78,18 @@ jobs:
           while IFS= read -r dir; do
             [ -n "$dir" ] || continue
             echo "Processing directory: '$dir'"
-            echo "---" >> "$SUMMARY_FILE"
-            echo "## Directory: $dir" >> "$SUMMARY_FILE"
-            echo "" >> "$SUMMARY_FILE"
-            pushd "$dir" > /dev/null || { echo "Failed to enter $dir"; echo "Failed to enter $dir" >> "$SUMMARY_FILE"; continue; }
+            pushd "$dir" > /dev/null || {
+              {
+                echo '```terraform'
+                echo "# Could not enter Terraform directory: $dir"
+                echo '```'
+                echo
+              } >> "$SUMMARY_FILE"
+              continue
+            }
 
             # Initialize (don't fail the whole job if init fails)
-            terraform init -input=false -no-color > init.txt 2>&1 || { echo "terraform init failed in $dir (continuing)"; echo "terraform init failed in $dir — see init output below:" >> "$SUMMARY_FILE"; echo '```' >> "$SUMMARY_FILE"; cat init.txt >> "$SUMMARY_FILE"; echo '```' >> "$SUMMARY_FILE"; }
+            terraform init -input=false -no-color > init.txt 2>&1 || true
 
             # Create plan (allow failure so we can report it)
             PLAN_FILE="tfplan"
@@ -96,13 +98,17 @@ jobs:
               PLAN_EXIT_CODE=0
             else
               PLAN_EXIT_CODE=$?
-              echo "**terraform plan failed (exit code $PLAN_EXIT_CODE).**" >> "$SUMMARY_FILE"
-              echo '```terraform' >> "$SUMMARY_FILE"
-              cat "$PLAN_OUT" >> "$SUMMARY_FILE"
-              echo '```' >> "$SUMMARY_FILE"
             fi
 
             if [ "$PLAN_EXIT_CODE" -ne 0 ]; then
+              {
+                echo '```terraform'
+                echo "# Directory: $dir (terraform plan failed with exit code $PLAN_EXIT_CODE)"
+                cat init.txt
+                cat "$PLAN_OUT"
+                echo '```'
+                echo
+              } >> "$SUMMARY_FILE"
               popd > /dev/null || true
               continue
             fi
@@ -115,41 +121,33 @@ jobs:
               terraform show -json "$PLAN_FILE" > plan.json 2>&1 || true
             fi
 
-            # Extract counts and resource lines using jq
+            # Ensure terraform show produced valid JSON before treating the plan as successful.
             if [ -s plan.json ] && jq -e 'type == "object"' plan.json > /dev/null 2>&1; then
-              echo "### Terraform plan output" >> "$SUMMARY_FILE"
-              echo "" >> "$SUMMARY_FILE"
-              echo '```terraform' >> "$SUMMARY_FILE"
-              cat show.txt >> "$SUMMARY_FILE" || true
-              echo '```' >> "$SUMMARY_FILE"
-              echo "" >> "$SUMMARY_FILE"
+              {
+                echo '```terraform'
+                echo "# Directory: $dir"
+                cat show.txt
+                echo '```'
+                echo
+              } >> "$SUMMARY_FILE"
             else
-              echo "No valid plan.json for $dir; terraform plan or terraform show may have failed." >> "$SUMMARY_FILE"
-              if [ -s plan.txt ]; then
-                echo "" >> "$SUMMARY_FILE"
-                echo "<details><summary>Plan stdout/stderr</summary>" >> "$SUMMARY_FILE"
-                echo '```terraform' >> "$SUMMARY_FILE"
-                cat plan.txt >> "$SUMMARY_FILE"
-                echo '```' >> "$SUMMARY_FILE"
-                echo "</details>" >> "$SUMMARY_FILE"
-              fi
-              if [ -s show.txt ]; then
-                echo "" >> "$SUMMARY_FILE"
-                echo "<details><summary>Terraform show output</summary>" >> "$SUMMARY_FILE"
-                echo '```terraform' >> "$SUMMARY_FILE"
-                cat show.txt >> "$SUMMARY_FILE"
-                echo '```' >> "$SUMMARY_FILE"
-                echo "</details>" >> "$SUMMARY_FILE"
-              fi
+              {
+                echo '```terraform'
+                echo "# Directory: $dir (Terraform plan output)"
+                if [ -s show.txt ]; then
+                  cat show.txt
+                elif [ -s plan.txt ]; then
+                  cat "$PLAN_OUT"
+                else
+                  cat init.txt
+                fi
+                echo '```'
+                echo
+              } >> "$SUMMARY_FILE"
             fi
 
             popd > /dev/null || true
           done <<< "$TERRAFORM_DIRS"
-
-          # Show summary to logs
-          echo "---- PLAN SUMMARY ----"
-          cat "$SUMMARY_FILE"
-          echo "---- END SUMMARY ----"
 
           # Save path for next step
           echo "summary_path=$SUMMARY_FILE" >> "$GITHUB_OUTPUT"
