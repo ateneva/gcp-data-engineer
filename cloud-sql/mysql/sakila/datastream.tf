@@ -1,16 +1,16 @@
 // Datastream: Sakila Cloud SQL -> BigQuery
 // This file creates Datastream resources that replicate the sakila Cloud SQL database into BigQuery.
 
-# create a BigQuery dataset for the Sakila database
+// 1. Create BigQuery dataset for the Sakila database
 resource "google_bigquery_dataset" "sakila_bq" {
   dataset_id  = "sakila"
   location    = var.region
   description = "This dataset stores streaming data from sakila mysql database"
 }
 
-# create a service accounts and IAM roles for Datastream
+// 2. Create Service accounts and IAM roles for Datastream
 resource "google_service_account" "datastream_sa" {
-  account_id   = "datastream-sa"
+  account_id   = "datastream-sa-sakilla"
   display_name = "Datastream service account"
 }
 
@@ -26,7 +26,7 @@ resource "google_project_iam_member" "datastream_admin" {
   member  = "serviceAccount:${google_service_account.datastream_sa.email}"
 }
 
-// Datastream connection profile: MySQL (Cloud SQL)
+// 3. Create Datastream connection profile for MySQL (Cloud SQL)
 resource "google_datastream_connection_profile" "mysql_cp" {
   connection_profile_id = "sakila-mysql-cp"
   display_name          = "sakila-mysql-cp"
@@ -40,7 +40,7 @@ resource "google_datastream_connection_profile" "mysql_cp" {
   }
 }
 
-// Datastream connection profile: BigQuery destination
+// 4. Create Datastream connection profile for BigQuery destination
 resource "google_datastream_connection_profile" "bq_cp" {
   connection_profile_id = "sakila-bigquery-cp"
   display_name          = "sakila-bigquery-cp"
@@ -48,6 +48,7 @@ resource "google_datastream_connection_profile" "bq_cp" {
   bigquery_profile {}
 }
 
+// 5. Create a Datastream Stream
 resource "google_datastream_stream" "sakila_to_bq" {
   stream_id    = "sakila-to-bq-stream"
   display_name = "Sakila -> BigQuery"

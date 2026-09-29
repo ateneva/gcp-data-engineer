@@ -15,8 +15,7 @@ gcloud sql connect $(terraform output -raw instance_name) --user=dvdrental_user 
 Once connected to the `dvdrental` database:
 
 ```sql
-\dt
-SELECT * FROM actor LIMIT 10;
+SELECT * FROM actor ;
 ```
 
 ---
@@ -33,15 +32,43 @@ This project includes Terraform configuration to replicate the `dvdrental` datab
 ### Prerequisite: Logical Decoding
 The Cloud SQL instance is configured with the `cloudsql.logical_decoding` flag set to `on`.
 
+```tf
+resource "google_sql_database_instance" "postgres_dvdrental_instance" {
+  name             = "postgres-dvdrental-db-${random_id.db_suffix.hex}"
+  database_version = "POSTGRES_15"
+  region           = var.region
+
+  settings {
+    tier = "db-f1-micro"
+
+    database_flags {
+      name  = "cloudsql.logical_decoding"
+      value = "on"
+    }
+  }
+}
+```
+
 ### Manual Steps for PostgreSQL
 After applying the Terraform configuration, you must connect to the PostgreSQL database and create the replication slot and publication if they don't exist:
 
 ```sql
--- 1. Create a publication for all tables
+--- 1. Grant super user privileges to replication user
+GRANT cloudsqlsuperuser TO datastream_user;
+
+--- 2. Create publication for all tables
 CREATE PUBLICATION dvdrental_publication FOR ALL TABLES;
 
--- 2. Create a logical replication slot
+--- 3. Create replication slot
 SELECT pg_create_logical_replication_slot('dvdrental_slot', 'pgoutput');
+
+--- 4. Grant table and schema privileges to datastream user
+GRANT USAGE ON SCHEMA public TO datastream_user;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO datastream_user;
+    
+--- 5. Ensure datastream_user can read future tables created in public schema
+ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+GRANT SELECT ON TABLES TO datastream_user;
 ```
 
 ### Terraform Resources
@@ -101,3 +128,63 @@ Datastream requires specific PostgreSQL roles and objects to be present for CDC 
 *   **Granting Replication Privilege:** The `dvdrental_user` was granted the `REPLICATION` attribute (`ALTER ROLE dvdrental_user WITH REPLICATION`).
 
 *   **Manual Object Creation:** The `dvdrental_publication` and `dvdrental_slot` were manually created to ensure the stream could validate connectivity and begin the backfill process.
+
+
+## Ouptuts and resource cleanup
+
+### Ouputs 
+
+```bash
+tenevaa21@cloudshell:~/gcp-data-engineer/cloud-sql/postgresql/dvdrental (data-geeking-gcp)$ terraform output
+connection_name = "data-geeking-gcp:europe-west1:postgres-dvdrental-db-0fd7884f"
+datastream_bigquery_connection_profile_id = "projects/data-geeking-gcp/locations/europe-west1/connectionProfiles/dvdrental-bigquery-cp"
+datastream_bigquery_dataset_id = "dvdrental"
+datastream_db_password = <sensitive>
+datastream_db_user = "datastream_user"
+datastream_postgres_connection_profile_id = "projects/data-geeking-gcp/locations/europe-west1/connectionProfiles/dvdrental-postgres-cp"
+datastream_service_account_email = "datastream-sa-dvdrental@data-geeking-gcp.iam.gserviceaccount.com"
+datastream_stream_id = "projects/data-geeking-gcp/locations/europe-west1/streams/dvdrental-to-bq-stream"
+datastream_stream_name = "dvdrental-to-bq-stream"
+datastream_stream_state = "RUNNING"
+db_name = "dvdrental"
+db_password = <sensitive>
+db_user = "dvdrental_user"
+db_username = "dvdrental_user"
+gcp_project_id = "data-geeking-gcp"
+instance_connection_name = "data-geeking-gcp:europe-west1:postgres-dvdrental-db-0fd7884f"
+instance_name = "postgres-dvdrental-db-0fd7884f"
+instance_service_account_email = "p275589915638-3anxvn@gcp-sa-cloud-sql.iam.gserviceaccount.com"
+postgresql_publication_name = "dvdrental_publication"
+postgresql_replication_slot_name = "dvdrental_slot"
+public_ip_address = "34.140.143.126"
+tenevaa21@cloudshell:~/gcp-data-engineer/cloud-sql/postgresql/dvdrental (data-geeking-gcp)$ 
+```
+
+### Resource cleanup
+
+```bash
+# Step 1: Destroy Datastream pipeline resources first
+terraform destroy \
+  -target="google_datastream_stream.dvdrental_to_bq" \
+  -target="google_datastream_connection_profile.postgres_cp" \
+  -target="google_datastream_connection_profile.bq_cp"
+
+# Step 2: Destroy PostgreSQL CDC replication objects
+terraform destroy \
+  -target="postgresql_publication.dvdrental_pub" \
+  -target="postgresql_replication_slot.dvdrental_slot"
+
+# Step 3: Destroy BigQuery destination dataset and Service Accounts
+terraform destroy \
+  -target="google_bigquery_dataset.dvdrental_bq" \
+  -target="google_service_account.datastream_sa"
+
+# Step 4: Destroy Cloud SQL instance, database, users, and secrets
+terraform destroy \
+  -target="google_sql_database.dvdrental_db" \
+  -target="google_sql_user.dvdrental_db_user" \
+  -target="google_sql_user.datastream_user" \
+  -target="google_sql_database_instance.postgres_dvdrental_instance" \
+  -target="random_password.dvdrental_db_password" \
+  -target="random_password.datastream_db_password"
+```

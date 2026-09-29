@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.8"
   required_providers {
     google = {
       source  = "hashicorp/google"
@@ -17,12 +17,22 @@ provider "google" {
   region  = var.region
 }
 
-# Generate a random suffix for the instance name
+# --- 1. Random Generators ---
 resource "random_id" "db_suffix" {
   byte_length = 4
 }
 
-# 1. Cloud SQL Instance Configuration (PostgreSQL)
+resource "random_password" "dvdrental_db_password" {
+  length  = 16
+  special = true
+}
+
+resource "random_password" "datastream_db_password" {
+  length  = 16
+  special = true
+}
+
+# --- 2. Cloud SQL Instance Configuration (PostgreSQL) ---
 resource "google_sql_database_instance" "postgres_dvdrental_instance" {
   name             = "postgres-dvdrental-db-${random_id.db_suffix.hex}"
   database_version = "POSTGRES_15"
@@ -36,6 +46,14 @@ resource "google_sql_database_instance" "postgres_dvdrental_instance" {
     ip_configuration {
       ipv4_enabled = true
 
+      # Authorized network for local apply / runner access
+      # Replace '0.0.0.0/0' with your specific runner IP/CIDR in production!
+      authorized_networks {
+        name  = "runner"
+        value = "0.0.0.0/0"
+      }
+
+      # Datastream Public IPs (Europe-West1)
       authorized_networks {
         name  = "datastream-1"
         value = "104.199.6.64"
@@ -70,21 +88,25 @@ resource "google_sql_database_instance" "postgres_dvdrental_instance" {
   }
 }
 
-# 2. Database Creation
+# --- 3. Database Creation ---
 resource "google_sql_database" "dvdrental_db" {
   name     = "dvdrental"
   instance = google_sql_database_instance.postgres_dvdrental_instance.name
 }
 
-# 3. Random Password Generation
-resource "random_password" "dvdrental_db_password" {
-  length  = 16
-  special = true
-}
-
-# 4. Database User
+# --- 4. Database Users ---
+# Admin / Application User
 resource "google_sql_user" "dvdrental_db_user" {
   name     = "dvdrental_user"
   instance = google_sql_database_instance.postgres_dvdrental_instance.name
   password = random_password.dvdrental_db_password.result
+  type     = "BUILT_IN"
+}
+
+# Datastream CDC Replication User
+resource "google_sql_user" "datastream_user" {
+  name     = "datastream_user"
+  instance = google_sql_database_instance.postgres_dvdrental_instance.name
+  password = random_password.datastream_db_password.result
+  type     = "BUILT_IN"
 }

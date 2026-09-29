@@ -17,7 +17,8 @@ provider "google" {
   region  = var.region
 }
 
-# Generate a random suffix for the instance name (Cloud SQL names cannot be reused immediately after deletion)
+# Generate a random suffix for the instance name
+# (Cloud SQL names cannot be reused immediately after deletion)
 resource "random_id" "db_suffix" {
   byte_length = 4
 }

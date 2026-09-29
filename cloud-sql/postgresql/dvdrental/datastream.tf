@@ -1,13 +1,13 @@
-# Datastream: dvdrental PostgreSQL -> BigQuery
+// Datastream: dvdrental PostgreSQL -> BigQuery
 
-# 1. BigQuery Dataset for the dvdrental database
+// 1. BigQuery Dataset for the dvdrental database
 resource "google_bigquery_dataset" "dvdrental_bq" {
   dataset_id  = "dvdrental"
   location    = var.region
   description = "This dataset stores streaming data from dvdrental postgresql database"
 }
 
-# 2. Service Account and IAM roles for Datastream
+// 2. Service Account and IAM roles for Datastream
 resource "google_service_account" "datastream_sa" {
   account_id   = "datastream-sa-dvdrental"
   display_name = "Datastream service account for dvdrental"
@@ -25,7 +25,7 @@ resource "google_project_iam_member" "datastream_admin" {
   member  = "serviceAccount:${google_service_account.datastream_sa.email}"
 }
 
-# 3. Datastream connection profile: PostgreSQL (Cloud SQL)
+// 3. Datastream connection profile: PostgreSQL (Cloud SQL)
 resource "google_datastream_connection_profile" "postgres_cp" {
   connection_profile_id = "dvdrental-postgres-cp"
   display_name          = "dvdrental-postgres-cp"
@@ -40,20 +40,21 @@ resource "google_datastream_connection_profile" "postgres_cp" {
   }
 }
 
-# 4. Datastream connection profile: BigQuery destination
+// 4. Datastream connection profile: BigQuery destination
 resource "google_datastream_connection_profile" "bq_cp" {
-  connection_profile_id = "bigquery-destination-cp"
-  display_name          = "bigquery-destination-cp"
+  connection_profile_id = "dvdrental-bigquery-cp"
+  display_name          = "dvdrental-bigquery-cp"
   location              = var.region
   bigquery_profile {}
 }
 
-# 5. Datastream Stream
+// 5. Datastream Stream
 resource "google_datastream_stream" "dvdrental_to_bq" {
   stream_id    = "dvdrental-to-bq-stream"
   display_name = "dvdrental PostgreSQL -> BigQuery"
   location     = var.region
 
+  // Desired state required (RUNNING or PAUSED)
   desired_state = "RUNNING"
 
   source_config {
