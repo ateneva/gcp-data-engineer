@@ -117,15 +117,6 @@ jobs:
 
             # Extract counts and resource lines using jq
             if [ -s plan.json ] && jq -e 'type == "object"' plan.json > /dev/null 2>&1; then
-              create_count=$(jq '[.resource_changes[]? | select(.change.actions | index("create"))] | length' plan.json)
-              update_count=$(jq '[.resource_changes[]? | select(.change.actions | index("update"))] | length' plan.json)
-              delete_count=$(jq '[.resource_changes[]? | select(.change.actions | index("delete"))] | length' plan.json)
-              replace_count=$(jq '[.resource_changes[]? | select((.change.actions | index("create")) and (.change.actions | index("delete")))] | length' plan.json)
-
-              echo "**Summary:** $create_count to add, $update_count to change, $delete_count to destroy, $replace_count to replace" >> "$SUMMARY_FILE"
-
-              echo "" >> "$SUMMARY_FILE"
-
               echo "### Terraform plan output" >> "$SUMMARY_FILE"
               echo "" >> "$SUMMARY_FILE"
               echo '```terraform' >> "$SUMMARY_FILE"
