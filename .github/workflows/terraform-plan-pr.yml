@@ -97,7 +97,7 @@ jobs:
             else
               PLAN_EXIT_CODE=$?
               echo "**terraform plan failed (exit code $PLAN_EXIT_CODE).**" >> "$SUMMARY_FILE"
-              echo '```' >> "$SUMMARY_FILE"
+              echo '```terraform' >> "$SUMMARY_FILE"
               cat "$PLAN_OUT" >> "$SUMMARY_FILE"
               echo '```' >> "$SUMMARY_FILE"
             fi
@@ -134,7 +134,7 @@ jobs:
 
               echo "<details><summary>Full plan output</summary>" >> "$SUMMARY_FILE"
               echo '' >> "$SUMMARY_FILE"
-              echo '```' >> "$SUMMARY_FILE"
+              echo '```terraform' >> "$SUMMARY_FILE"
               cat show.txt >> "$SUMMARY_FILE" || true
               echo '```' >> "$SUMMARY_FILE"
               echo "" >> "$SUMMARY_FILE"
@@ -144,7 +144,7 @@ jobs:
               if [ -s plan.txt ]; then
                 echo "" >> "$SUMMARY_FILE"
                 echo "<details><summary>Plan stdout/stderr</summary>" >> "$SUMMARY_FILE"
-                echo '```' >> "$SUMMARY_FILE"
+                echo '```terraform' >> "$SUMMARY_FILE"
                 cat plan.txt >> "$SUMMARY_FILE"
                 echo '```' >> "$SUMMARY_FILE"
                 echo "</details>" >> "$SUMMARY_FILE"
@@ -152,7 +152,7 @@ jobs:
               if [ -s show.txt ]; then
                 echo "" >> "$SUMMARY_FILE"
                 echo "<details><summary>Terraform show output</summary>" >> "$SUMMARY_FILE"
-                echo '```' >> "$SUMMARY_FILE"
+                echo '```terraform' >> "$SUMMARY_FILE"
                 cat show.txt >> "$SUMMARY_FILE"
                 echo '```' >> "$SUMMARY_FILE"
                 echo "</details>" >> "$SUMMARY_FILE"
