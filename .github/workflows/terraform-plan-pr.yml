@@ -126,12 +126,6 @@ jobs:
 
               echo "" >> "$SUMMARY_FILE"
 
-              echo "<details><summary>Resource changes</summary>" >> "$SUMMARY_FILE"
-              echo "" >> "$SUMMARY_FILE"
-              jq -r '.resource_changes[]? | "- " + (if (.change.actions | index("create")) then "+" elif (.change.actions | index("delete")) then "-" elif (.change.actions | index("update")) then "~" else "?" end) + " `" + .address + "` (" + (.change.actions | join(",")) + ")"' plan.json >> "$SUMMARY_FILE" || true
-              echo "" >> "$SUMMARY_FILE"
-              echo "</details>" >> "$SUMMARY_FILE"
-
               echo "### Terraform plan output" >> "$SUMMARY_FILE"
               echo "" >> "$SUMMARY_FILE"
               echo '```terraform' >> "$SUMMARY_FILE"
