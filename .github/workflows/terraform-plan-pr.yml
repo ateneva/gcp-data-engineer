@@ -132,13 +132,12 @@ jobs:
               echo "" >> "$SUMMARY_FILE"
               echo "</details>" >> "$SUMMARY_FILE"
 
-              echo "<details><summary>Full plan output</summary>" >> "$SUMMARY_FILE"
-              echo '' >> "$SUMMARY_FILE"
+              echo "### Terraform plan output" >> "$SUMMARY_FILE"
+              echo "" >> "$SUMMARY_FILE"
               echo '```terraform' >> "$SUMMARY_FILE"
               cat show.txt >> "$SUMMARY_FILE" || true
               echo '```' >> "$SUMMARY_FILE"
               echo "" >> "$SUMMARY_FILE"
-              echo "</details>" >> "$SUMMARY_FILE"
             else
               echo "No valid plan.json for $dir; terraform plan or terraform show may have failed." >> "$SUMMARY_FILE"
               if [ -s plan.txt ]; then
