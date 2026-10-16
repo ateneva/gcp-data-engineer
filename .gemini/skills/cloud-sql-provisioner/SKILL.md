@@ -31,7 +31,8 @@ When asked to create a Cloud SQL instance and import data:
 
 - **Import Strategy**: Prefer `gcloud sql import` over other methods for large SQL dumps as it is managed by the GCP backend.
 
-- **Dependencies**: Ensure the import resource `depends_on` the instance, database, and IAM grant.
+- **Dependencies**: Ensure the import resource `depends_on` the instance, database, and IAM grants to avoid race conditions.
+
 
 ## Reference Patterns
 

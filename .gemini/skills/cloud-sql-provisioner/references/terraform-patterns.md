@@ -2,7 +2,14 @@
 
 This reference provides idiomatic Terraform patterns for creating Google Cloud SQL instances and importing data from Cloud Storage.
 
+- [Terraform Patterns for Cloud SQL Provisioning and Import](#terraform-patterns-for-cloud-sql-provisioning-and-import)
+  - [1. Cloud SQL Instance with Random Suffix](#1-cloud-sql-instance-with-random-suffix)
+  - [2. Database and User](#2-database-and-user)
+  - [3. Data Import via gcloud (local-exec)](#3-data-import-via-gcloud-local-exec)
+  - [4. Multi-file Import Pattern](#4-multi-file-import-pattern)
+
 ## 1. Cloud SQL Instance with Random Suffix
+
 Cloud SQL instance names cannot be reused immediately after deletion. Always use a random suffix.
 
 ```hcl
@@ -29,6 +36,7 @@ resource "google_sql_database_instance" "instance" {
 ```
 
 ## 2. Database and User
+
 ```hcl
 resource "google_sql_database" "database" {
   name     = var.db_name
@@ -48,6 +56,7 @@ resource "google_sql_user" "user" {
 ```
 
 ## 3. Data Import via gcloud (local-exec)
+
 Importing data often requires granting the Cloud SQL service account read access to the source bucket.
 
 ```hcl
@@ -82,6 +91,7 @@ resource "null_resource" "db_import" {
 ```
 
 ## 4. Multi-file Import Pattern
+
 If importing multiple files, use `for_each` or a loop in `local-exec`.
 
 ```hcl
