@@ -1,0 +1,17 @@
+stream_id: "sakila-to-bq-critical-stream"
+display_name: "Sakila -> BigQuery"
+location: "eu-west1"
+desired_state: "RUNNING"
+
+source:
+  database: "sakila"
+  tables:
+    - "customers"
+    - "orders"
+
+destination:
+  dataset_id: "projects/data-geeking-gcp/datasets/eu_data_challenge"
+  write_mode: "append" # Change to "merge" if you want standard upserts/deletes
+
+backfill:
+  enabled: true # Set to false if you want to skip historical backfill completely
