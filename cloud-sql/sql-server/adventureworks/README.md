@@ -11,17 +11,19 @@ This Terraform configuration creates a Google Cloud SQL instance for SQL Server 
 
 ## Usage
 
-1.  Initialize Terraform:
+1. Initialize Terraform:
+
     ```bash
     terraform init
     ```
 
-2.  Apply the configuration:
+2. Apply the configuration:
+
     ```bash
     terraform apply
     ```
 
-3.  The import process is handled via a `null_resource` using `local-exec`. Ensure you have `gcloud` authenticated and configured with the correct project.
+3. The import process is handled via a `null_resource` using `local-exec`. Ensure you have `gcloud` authenticated and configured with the correct project.
 
 ## Note on SQL Server Tiers
 
@@ -48,9 +50,9 @@ EXEC msdb.dbo.gcloudsql_cdc_enable_db 'AdventureWorksDW2017';
 
 -- 2. Enable CDC for specific tables (e.g., DimCustomer)
 USE [AdventureWorksDW2017];
-EXEC sys.sp_cdc_enable_table 
-    @source_schema = N'dbo', 
-    @source_name = N'DimCustomer', 
+EXEC sys.sp_cdc_enable_table
+    @source_schema = N'dbo',
+    @source_name = N'DimCustomer',
     @role_name = NULL;
 
 -- 3. Enable Snapshot Isolation for consistent backfills
@@ -69,7 +71,7 @@ EXEC sys.sp_cdc_stop_job 'capture';
 EXEC sys.sp_cdc_start_job 'capture';
 ```
 
-#### Step 1 :
+#### Step 1
 
 ```sql
 CREATE PROCEDURE dbo.DatastreamLogTruncationSafeguard @transaction_logs_retention_time INT
@@ -142,7 +144,7 @@ BEGIN
 END;
 ```
 
-#### Step 2:
+#### Step 2
 
 ```sql
 CREATE PROCEDURE [dbo].[SetUpDatastreamJob] @transaction_logs_retention_time INT
@@ -213,7 +215,7 @@ SET @job_name =
 END;
 ```
 
-#### Step 3:
+#### Step 3
 
 ```sql
 DECLARE @transaction_logs_retention_time INT = 3600;
@@ -222,15 +224,14 @@ EXEC [dbo].[SetUpDatastreamJob] @transaction_logs_retention_time = @transaction_
 
 ### 3. Networking
 
-1.  **Public IP**: The Terraform configuration in `main.tf` automatically adds Datastream's regional IP addresses for `europe-west1` to the **Authorized Networks** for your Cloud SQL instance. If you are using a different region, you must update the IP list in `main.tf`.
+1. **Public IP**: The Terraform configuration in `main.tf` automatically adds Datastream's regional IP addresses for `europe-west1` to the **Authorized Networks** for your Cloud SQL instance. If you are using a different region, you must update the IP list in `main.tf`.
 
-
-2.  **Private IP**: If using a private network, you must set up a **Private Service Connect (PSC)** or **VPC Peering** connection profile in Datastream.
-
+2. **Private IP**: If using a private network, you must set up a **Private Service Connect (PSC)** or **VPC Peering** connection profile in Datastream.
 
 ### 4. Datastream Infrastructure
 
 The `datastream.tf` file (if provided) contains the Terraform resources to create:
+
 - A **Source Connection Profile** for SQL Server.
 - A **Destination Connection Profile** for BigQuery.
 - A **Stream** that captures changes from the enabled tables.
@@ -238,4 +239,3 @@ The `datastream.tf` file (if provided) contains the Terraform resources to creat
 ### 5. Start the Stream
 
 Once the infrastructure is deployed and CDC is enabled, start the stream in the GCP Console to begin the initial backfill and ongoing change synchronization.
-

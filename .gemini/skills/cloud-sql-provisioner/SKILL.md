@@ -33,7 +33,6 @@ When asked to create a Cloud SQL instance and import data:
 
 - **Dependencies**: Ensure the import resource `depends_on` the instance, database, and IAM grants to avoid race conditions.
 
-
 ## Reference Patterns
 
 Detailed code examples for various scenarios can be found in [references/terraform-patterns.md](references/terraform-patterns.md).

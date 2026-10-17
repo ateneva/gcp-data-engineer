@@ -5,3 +5,4 @@
 .terraform.lock.hcl
 tfplan
 *.backup
+gcp-de

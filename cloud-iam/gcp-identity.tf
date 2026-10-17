@@ -36,11 +36,11 @@ resource "google_service_account_iam_member" "workload_identity_user_gcp" {
 }
 
 output "gcp_identity_provider_name" {
-  value = google_iam_workload_identity_pool_provider.github_gcp_provider.name
+  value       = google_iam_workload_identity_pool_provider.github_gcp_provider.name
   description = "The full identifier of the Workload Identity Pool Provider"
 }
 
 output "gcp_service_account_email" {
-  value = google_service_account.github_gcp_actions.email
+  value       = google_service_account.github_gcp_actions.email
   description = "The email of the service account created for GitHub Actions"
 }

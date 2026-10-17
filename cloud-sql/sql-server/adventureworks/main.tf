@@ -73,4 +73,3 @@ resource "random_password" "sa_password" {
   length  = 16
   special = true
 }
-

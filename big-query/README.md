@@ -100,15 +100,15 @@ roles/bigquery.resourceAdmin
 
 ```sql
 -- 1. Dataset Scope (for tables/columns within a single dataset)
-SELECT table_name, table_type 
+SELECT table_name, table_type
 FROM `my-project`.my_dataset.INFORMATION_SCHEMA.TABLES;
 
 -- 2. Regional Scope (for job history or datasets across a region)
-SELECT job_id, query, total_bytes_billed 
+SELECT job_id, query, total_bytes_billed
 FROM `my-project`.`region-eu`.INFORMATION_SCHEMA.JOBS;
 
 -- 3. Organization Scope (requires admin privileges)
-SELECT * 
+SELECT *
 FROM `region-eu`.INFORMATION_SCHEMA.JOBS_BY_ORGANIZATION;
 ```
 
@@ -142,7 +142,7 @@ SELECT
 
   -- average slot utilization across query lifetime
   ROUND(total_slot_ms / GREATEST(TIMESTAMP_DIFF(end_time, start_time, MILLISECOND), 1), 2) AS avg_slots_used,
-  
+
   -- indicates potential slot contention if execution spent time queuing
   timeline[SAFE_OFFSET(0)].elapsed_ms AS initial_wait_ms
 

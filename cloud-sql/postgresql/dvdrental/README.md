@@ -91,9 +91,9 @@ SELECT pg_create_logical_replication_slot('dvdrental_slot', 'pgoutput');
 --- 5. Grant table and schema privileges to datastream user
 GRANT USAGE ON SCHEMA public TO datastream_user;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO datastream_user;
-    
+
 --- 6. Ensure datastream_user can read future tables created in public schema
-ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT ON TABLES TO datastream_user;
 ```
 
@@ -188,7 +188,7 @@ instance_service_account_email = "p275589915638-3anxvn@gcp-sa-cloud-sql.iam.gser
 postgresql_publication_name = "dvdrental_publication"
 postgresql_replication_slot_name = "dvdrental_slot"
 public_ip_address = "34.140.143.126"
-tenevaa21@cloudshell:~/gcp-data-engineer/cloud-sql/postgresql/dvdrental (data-geeking-gcp)$ 
+tenevaa21@cloudshell:~/gcp-data-engineer/cloud-sql/postgresql/dvdrental (data-geeking-gcp)$
 ```
 
 ### Resource cleanup

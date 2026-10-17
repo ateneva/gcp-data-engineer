@@ -11,7 +11,7 @@ SELECT pg_create_logical_replication_slot('dvdrental_slot', 'pgoutput');
 --- 4. Grant table and schema privileges to datastream user
 GRANT USAGE ON SCHEMA public TO datastream_user;
 GRANT SELECT ON ALL TABLES IN SCHEMA public TO datastream_user;
-    
+
 --- 5. Ensure datastream_user can read future tables created in public schema
-ALTER DEFAULT PRIVILEGES IN SCHEMA public 
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
 GRANT SELECT ON TABLES TO datastream_user;
