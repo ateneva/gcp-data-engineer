@@ -60,3 +60,8 @@ output "datastream_stream_state" {
   description = "Desired state of the Datastream stream"
   value       = google_datastream_stream.sakila_to_bq.desired_state
 }
+
+output "db_credentials" {
+  description = "location where the db credentials are stored"
+  value       = local_file.db_credentials.filename
+}

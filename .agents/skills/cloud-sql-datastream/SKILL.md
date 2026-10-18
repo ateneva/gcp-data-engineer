@@ -5,8 +5,6 @@ description: Creates Terraform Datastream pipelines from Cloud SQL MySQL, Postgr
 
 # Cloud SQL to BigQuery with Datastream
 
-
-
 ## MySQL Pattern
 
 ### 1. Prepare the MySQL database for streaming
@@ -63,10 +61,12 @@ resource "google_project_iam_member" "datastream_admin" {
 }
 ```
 
-### 3. Create a BQ dataset to store the streamed data from Cloud SQL MySQL. 
+### 3. Create a BQ dataset to store the streamed data from Cloud SQL MySQL
+>
 > The dataset is created in `bigquery-dataset.tf`.
 
-### 4. Create a Datastream connection profile to connect to the `Cloud SQL MySQL instance`. 
+### 4. Create a Datastream connection profile to connect to the `Cloud SQL MySQL instance`
+>
 > The connection profile is created in `cloud-datastream/mysql-stream.tf`.
 
 ```tf
@@ -84,7 +84,8 @@ resource "google_datastream_connection_profile" "mysql_cp" {
 }
 ```
 
-### 5. Create a Datastream connection profile to connect to the `BigQuery dataset`.
+### 5. Create a Datastream connection profile to connect to the `BigQuery dataset`
+>
 > The connection profile is created in `cloud-datastream/mysql-stream.tf`.
 
 ```tf
@@ -96,7 +97,8 @@ resource "google_datastream_connection_profile" "bq_cp" {
 }
 ```
 
-### 6. Create a Datastream stream to connect the MySQL connection profile to the BigQuery connection profile.
+### 6. Create a Datastream stream to connect the MySQL connection profile to the BigQuery connection profile
+>
 > The stream is created in `cloud-datastream/mysql-stream.tf`.
 
 ```tf
@@ -110,7 +112,6 @@ resource "google_datastream_connection_profile" "bq_cp" {
 ---
 
 ## SQL Server Pattern
-
 
 ## Official Documentation
 
