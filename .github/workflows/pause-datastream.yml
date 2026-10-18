@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       stream_id:
-        description: Datastream stream ID
+        description: Provide stream ID
         required: true
-        default: sakila-to-bq-stream
         type: string
       location:
         description: GCP region where the stream is configured
