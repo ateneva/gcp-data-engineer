@@ -35,6 +35,12 @@ resource "google_service_account_iam_member" "workload_identity_user_gcp" {
   member             = "principalSet://iam.googleapis.com/${google_iam_workload_identity_pool.github_gcp_pool.name}/attribute.repository/ateneva/gcp-data-engineer"
 }
 
+resource "google_project_iam_member" "github_datastream_admin" {
+  project = google_service_account.github_gcp_actions.project
+  role    = "roles/datastream.admin"
+  member  = "serviceAccount:${google_service_account.github_gcp_actions.email}"
+}
+
 output "gcp_identity_provider_name" {
   value       = google_iam_workload_identity_pool_provider.github_gcp_provider.name
   description = "The full identifier of the Workload Identity Pool Provider"
