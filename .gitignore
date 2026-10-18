@@ -6,3 +6,4 @@
 tfplan
 *.backup
 gcp-de
+db_credentials.txt
