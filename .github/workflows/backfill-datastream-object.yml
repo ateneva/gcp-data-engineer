@@ -1,0 +1,76 @@
+name: Backfill Datastream object
+
+on:
+  workflow_dispatch:
+    inputs:
+      stream_id:
+        description: Datastream stream ID
+        required: true
+        type: string
+      object_id:
+        description: Datastream stream object ID
+        required: true
+        type: string
+      location:
+        description: GCP region where the stream is configured
+        required: true
+        default: europe-west1
+        type: string
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  backfill-object:
+    runs-on: ubuntu-latest
+    env:
+      GCP_PROJECT_ID: data-geeking-gcp
+      STREAM_ID: ${{ inputs.stream_id }}
+      OBJECT_ID: ${{ inputs.object_id }}
+      LOCATION: ${{ inputs.location }}
+      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+    steps:
+      - name: Check secret availability
+        run: |
+          if [ -z "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ]; then
+            echo "Error: GCP_WORKLOAD_IDENTITY_PROVIDER secret is missing or empty!" >&2
+            exit 1
+          fi
+          if [ -z "${{ secrets.GCP_SERVICE_ACCOUNT }}" ]; then
+            echo "Error: GCP_SERVICE_ACCOUNT secret is missing or empty!" >&2
+            exit 1
+          fi
+          echo "Secrets are present."
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT_ID }}
+
+      - name: Start object backfill
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          encoded_stream_id="$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote(os.environ["STREAM_ID"], safe=""))')"
+          encoded_object_id="$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote(os.environ["OBJECT_ID"], safe=""))')"
+          access_token="$(gcloud auth print-access-token)"
+          object_name="projects/${GCP_PROJECT_ID}/locations/${LOCATION}/streams/${STREAM_ID}/objects/${OBJECT_ID}"
+
+          curl --fail-with-body --silent --show-error \
+            --request POST \
+            --header "Authorization: Bearer ${access_token}" \
+            --header "Content-Type: application/json" \
+            --data '{}' \
+            "https://datastream.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/${LOCATION}/streams/${encoded_stream_id}/objects/${encoded_object_id}:startBackfillJob"
+
+          echo "Backfill initiated for Datastream object '${object_name}'."
