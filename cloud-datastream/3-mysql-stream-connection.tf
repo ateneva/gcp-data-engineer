@@ -5,7 +5,7 @@ resource "google_datastream_connection_profile" "mysql_cp" {
   display_name          = "sakila-mysql"
   location              = "europe-west1"
 
-mysql_profile {
+  mysql_profile {
     hostname = var.mysql_hostname
     port     = 3306
     username = var.mysql_username
