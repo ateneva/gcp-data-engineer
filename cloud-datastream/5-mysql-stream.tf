@@ -17,7 +17,7 @@ resource "google_datastream_stream" "mysql_to_bq" {
       include_objects {
         mysql_databases {
           database = local.config.source.database
-          
+
           # Dynamically loop through the tables listed in the YAML file
           dynamic "mysql_tables" {
             for_each = local.config.source.tables
