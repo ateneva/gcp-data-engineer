@@ -28,6 +28,18 @@ jobs:
       GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
     steps:
+      - name: Check secret availability
+        run: |
+          if [ -z "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ]; then
+            echo "Error: GCP_WORKLOAD_IDENTITY_PROVIDER secret is missing or empty!" >&2
+            exit 1
+          fi
+          if [ -z "${{ secrets.GCP_SERVICE_ACCOUNT }}" ]; then
+            echo "Error: GCP_SERVICE_ACCOUNT secret is missing or empty!" >&2
+            exit 1
+          fi
+          echo "Secrets are present."
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
