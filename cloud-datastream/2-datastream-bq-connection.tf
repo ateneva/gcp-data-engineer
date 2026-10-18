@@ -3,6 +3,6 @@
 resource "google_datastream_connection_profile" "bq_cp" {
   connection_profile_id = "datastream-bigquery"
   display_name          = "datastream-bigquery"
-  location              = "eu-west1"
+  location              = "europe-west1"
   bigquery_profile {}
 }

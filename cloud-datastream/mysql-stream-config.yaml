@@ -1,6 +1,6 @@
 stream_id: "sakila-to-bq-critical-stream"
 display_name: "Sakila -> BigQuery"
-location: "eu-west1"
+location: "europe-west1"
 desired_state: "RUNNING"
 
 source:
