@@ -6,11 +6,11 @@ desired_state: "RUNNING"
 source:
   database: "sakila"
   tables:
-    - "customers"
-    - "orders"
+    - "customer"
+    - "payment"
 
 destination:
-  dataset_id: "projects/data-geeking-gcp/datasets/eu_data_challenge"
+  dataset_id: "projects/data-geeking-gcp/datasets/sakila_streaming"
   write_mode: "append" # Change to "merge" if you want standard upserts/deletes
 
 backfill:
