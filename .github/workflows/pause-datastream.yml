@@ -24,31 +24,15 @@ jobs:
       GCP_PROJECT_ID: data-geeking-gcp
       STREAM_ID: ${{ inputs.stream_id }}
       LOCATION: ${{ inputs.location }}
+      GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+      GCP_SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
 
     steps:
-      - name: Validate Google Cloud identity configuration
-        env:
-          WIF_PROVIDER: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          SERVICE_ACCOUNT: ${{ secrets.GCP_SERVICE_ACCOUNT }}
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [[ -z "$WIF_PROVIDER" ]]; then
-            echo "::error::Set GCP_WORKLOAD_IDENTITY_PROVIDER as a repository variable or secret to the full Workload Identity Provider resource name."
-            exit 1
-          fi
-
-          if [[ -z "$SERVICE_ACCOUNT" ]]; then
-            echo "::error::Set GCP_SERVICE_ACCOUNT as a repository variable or secret to the GitHub Actions service account email."
-            exit 1
-          fi
-
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ env.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ env.GCP_SERVICE_ACCOUNT }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
