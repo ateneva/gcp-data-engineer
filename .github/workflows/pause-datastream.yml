@@ -1,12 +1,11 @@
-name: Pause Datastream stream
+name: Pause Datastream
 
 on:
   workflow_dispatch:
     inputs:
       stream_id:
-        description: Datastream stream ID
+        description: Provide stream ID
         required: true
-        default: sakila-to-bq-stream
         type: string
       location:
         description: GCP region where the stream is configured
@@ -27,11 +26,29 @@ jobs:
       LOCATION: ${{ inputs.location }}
 
     steps:
+      - name: Validate Google Cloud identity configuration
+        env:
+          WIF_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT || secrets.GCP_SERVICE_ACCOUNT }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [[ -z "$WIF_PROVIDER" ]]; then
+            echo "::error::Set GCP_WORKLOAD_IDENTITY_PROVIDER as a repository variable or secret to the full Workload Identity Provider resource name."
+            exit 1
+          fi
+
+          if [[ -z "$SERVICE_ACCOUNT" ]]; then
+            echo "::error::Set GCP_SERVICE_ACCOUNT as a repository variable or secret to the GitHub Actions service account email."
+            exit 1
+          fi
+
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ vars.GCP_SERVICE_ACCOUNT }}
+          workload_identity_provider: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER || secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ vars.GCP_SERVICE_ACCOUNT || secrets.GCP_SERVICE_ACCOUNT }}
 
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v2
