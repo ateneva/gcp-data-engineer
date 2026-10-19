@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       object_id:
-        description: Datastream stream object ID
+        description: Source table name (for example, customer)
         required: true
         type: string
       location:
@@ -61,16 +61,47 @@ jobs:
         run: |
           set -euo pipefail
 
-          encoded_stream_id="$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote(os.environ["STREAM_ID"], safe=""))')"
-          encoded_object_id="$(python3 -c 'import os, urllib.parse; print(urllib.parse.quote(os.environ["OBJECT_ID"], safe=""))')"
           access_token="$(gcloud auth print-access-token)"
-          object_name="projects/${GCP_PROJECT_ID}/locations/${LOCATION}/streams/${STREAM_ID}/objects/${OBJECT_ID}"
+          stream_name="projects/${GCP_PROJECT_ID}/locations/${LOCATION}/streams/${STREAM_ID}"
+          objects_url="https://datastream.googleapis.com/v1/${stream_name}/objects"
+          page_token=""
+          object_names=()
 
+          while true; do
+            response="$(curl --fail-with-body --silent --show-error \
+              --header "Authorization: Bearer ${access_token}" \
+              --get \
+              --data-urlencode "pageSize=1000" \
+              --data-urlencode "pageToken=${page_token}" \
+              "$objects_url")"
+
+            while IFS= read -r name; do
+              object_names+=("$name")
+            done < <(jq -r --arg table "$OBJECT_ID" \
+              '.streamObjects[]? | select([.sourceObject | .. | objects | .table? // empty] | any(. == $table)) | .name' \
+              <<< "$response")
+
+            page_token="$(jq -r '.nextPageToken // empty' <<< "$response")"
+            [[ -n "$page_token" ]] || break
+          done
+
+          if [[ "${#object_names[@]}" -eq 0 ]]; then
+            echo "::error::No stream object with source table '${OBJECT_ID}' was found in '${stream_name}'. Check the stream and table name."
+            exit 1
+          fi
+
+          if [[ "${#object_names[@]}" -gt 1 ]]; then
+            printf '::error::More than one stream object has source table name "%s"; use a more specific stream. Matches:\n' "$OBJECT_ID" >&2
+            printf '  %s\n' "${object_names[@]}" >&2
+            exit 1
+          fi
+
+          object_name="${object_names[0]}"
           curl --fail-with-body --silent --show-error \
             --request POST \
             --header "Authorization: Bearer ${access_token}" \
             --header "Content-Type: application/json" \
             --data '{}' \
-            "https://datastream.googleapis.com/v1/projects/${GCP_PROJECT_ID}/locations/${LOCATION}/streams/${encoded_stream_id}/objects/${encoded_object_id}:startBackfillJob"
+            "https://datastream.googleapis.com/v1/${object_name}:startBackfillJob"
 
           echo "Backfill initiated for Datastream object '${object_name}'."
