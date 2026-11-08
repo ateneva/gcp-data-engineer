@@ -5,10 +5,12 @@ GRANT cloudsqlsuperuser TO datastream_user;
 --- 2. Create publication for all tables
 --- publication must be unique per stream
 CREATE PUBLICATION dvdrental_publication FOR ALL TABLES;
+CREATE PUBLICATION dvdrental_critical_publication FOR ALL TABLES;
 
 --- 3. Create replication slot
 --- replication slot must be unique per stream
 SELECT pg_create_logical_replication_slot('dvdrental_slot', 'pgoutput');
+SELECT pg_create_logical_replication_slot('dvdrental_critical_slot', 'pgoutput');
 
 --- 4. Grant table and schema privileges to datastream user
 GRANT USAGE ON SCHEMA public TO datastream_user;
