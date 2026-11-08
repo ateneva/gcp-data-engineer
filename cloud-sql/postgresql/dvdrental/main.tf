@@ -9,6 +9,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.5"
     }
+    local = {
+      source  = "hashicorp/local"
+      version = "~> 2.4"
+    }
   }
 }
 
@@ -109,4 +113,24 @@ resource "google_sql_user" "datastream_user" {
   instance = google_sql_database_instance.postgres_dvdrental_instance.name
   password = random_password.datastream_db_password.result
   type     = "BUILT_IN"
+}
+
+
+# 6. Save Database Credentials to a Local Text File
+resource "local_file" "db_credentials" {
+  filename        = "${path.module}/dvdrental_credentials.txt"
+  file_permission = "0600"
+
+  content = <<EOF
+========================================
+Database Credentials & Connection Info
+========================================
+Instance: ${google_sql_database_instance.postgres_dvdrental_instance.name}
+Host:     ${google_sql_database_instance.postgres_dvdrental_instance.public_ip_address}
+Port:     3306
+Database: ${google_sql_database.dvdrental_db.name}
+Username: ${google_sql_user.dvdrental_db_user.name}
+Password: ${google_sql_user.dvdrental_db_user.password}
+========================================
+EOF
 }
