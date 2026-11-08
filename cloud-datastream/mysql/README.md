@@ -2,6 +2,18 @@
 
 ## GCP Setup
 
+The following GCP infrastructure must be in place before a stream can be created:
+
+- bigquery dataset where data will be replicated
+- datastream service account with the following permissions
+
+```plaintxt
+roles/bigquery.dataEditor
+roles/datastream.admin
+```
+
+- datastream connection profile and MySQL database connection 
+
 ---
 
 ## MySQL Setup
@@ -71,7 +83,7 @@ resource "google_datastream_stream" "sakila_to_bq" {
 
     bigquery_destination_config {
       single_target_dataset {
-        dataset_id = "projects/data-geeking-gcp/datasets/sakila_streaming"
+        dataset_id = "projects/data-geeking-gcp/datasets/sakila"
       }
     }
   }
