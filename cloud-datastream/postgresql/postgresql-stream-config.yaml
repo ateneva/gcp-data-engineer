@@ -1,0 +1,19 @@
+stream_id: "dvdrental-to-bq-critical-stream"
+display_name: "dvdrental-to-bq-critical-stream"
+location: "europe-west1"
+desired_state: "RUNNING"
+
+source:
+  replication_slot: "dvdrental_slot"    # must be unique per stream
+  publication: "dvdrental_publication"  # must be unique per stream
+  database: "dvdrental"
+  tables:
+    - "customer"
+    - "payment"
+
+destination:
+  dataset_id: "projects/data-geeking-gcp/datasets/dvdrental_streaming"
+  write_mode: "append" # Change to "merge" if you want standard upserts/deletes
+
+backfill:
+  enabled: true # Set to false if you want to skip historical backfill completely
