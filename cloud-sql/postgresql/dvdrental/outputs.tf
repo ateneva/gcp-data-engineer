@@ -62,42 +62,6 @@ output "datastream_db_password" {
   sensitive   = true
 }
 
-# Datastream Resources Outputs
-output "datastream_bigquery_dataset_id" {
-  description = "Dataset ID of the BigQuery destination for Datastream"
-  value       = google_bigquery_dataset.dvdrental_bq.dataset_id
-}
-
-output "datastream_service_account_email" {
-  description = "Email of the Datastream service account"
-  value       = google_service_account.datastream_sa.email
-}
-
-output "datastream_postgres_connection_profile_id" {
-  description = "Resource ID of the Datastream PostgreSQL source connection profile"
-  value       = google_datastream_connection_profile.postgres_cp.id
-}
-
-output "datastream_bigquery_connection_profile_id" {
-  description = "Resource ID of the Datastream BigQuery destination connection profile"
-  value       = google_datastream_connection_profile.bq_cp.id
-}
-
-output "datastream_stream_id" {
-  description = "Resource ID of the Datastream stream"
-  value       = google_datastream_stream.dvdrental_to_bq.id
-}
-
-output "datastream_stream_name" {
-  description = "Stream identifier of the Datastream stream"
-  value       = google_datastream_stream.dvdrental_to_bq.stream_id
-}
-
-output "datastream_stream_state" {
-  description = "Desired state of the Datastream stream"
-  value       = google_datastream_stream.dvdrental_to_bq.desired_state
-}
-
 output "db_credentials" {
   description = "location where the db credentials are stored"
   value       = local_file.db_credentials.filename
