@@ -4,8 +4,8 @@ location: "europe-west1"
 desired_state: "RUNNING"
 
 source:
-  replication_slot: "dvdrental_slot"    # must be unique per stream
-  publication: "dvdrental_publication"  # must be unique per stream
+  replication_slot: "dvdrental_critical_slot"    # must be unique per stream
+  publication: "dvdrental_critical_publication"  # must be unique per stream
   database: "dvdrental"
   tables:
     - "customer"
