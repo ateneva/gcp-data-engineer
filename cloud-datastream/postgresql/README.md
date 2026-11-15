@@ -1,5 +1,13 @@
 # Setup Prerequisites
 
+- [Setup Prerequisites](#setup-prerequisites)
+  - [PostgreSQL Streaming Prerequisites](#postgresql-streaming-prerequisites)
+  - [GCP Streaming Prerequisites](#gcp-streaming-prerequisites)
+  - [Stream Defaults](#stream-defaults)
+  - [More info](#more-info)
+
+## PostgreSQL Streaming Prerequisites
+
 - postgresql db exists
 - logical replication has been enabled
 
@@ -47,6 +55,7 @@ SELECT pg_create_logical_replication_slot('dvdrental_slot', 'pgoutput');
 ```
 
 - primary keys have been defined for the tables being replicated
+  > NB! Missing primary keys will result in streaming errors
 
 ```sql
 -- Add primary key to the customer table
@@ -58,10 +67,66 @@ ALTER TABLE payment ADD PRIMARY KEY (payment_id);
 
 ---
 
+## GCP Streaming Prerequisites
+
+The following GCP infrastructure must be in place before a stream can be created:
+
+- bigquery dataset where data will be replicated
+- datastream service account with the following permissions
+
+```plaintxt
+roles/bigquery.dataEditor
+roles/datastream.admin
+```
+
+- datastream connection profile and PostgreSQL database connection
+
+  - Example of a PostgreSQL connection profile can be found on `cloud-datastream/postgresql/3-postgresql-stream-connection.tf`
+
+> Note that `PostgreSQL` requires `database` name to be specified in the `postgresql_profile` connection configuration
+
+```tf
+  postgresql_profile {
+    hostname = var.postgresql_hostname
+    port     = 5432
+    username = var.postgresql_username
+    password = var.postgresql_password
+    database = var.postgresql_db
+  }
+```
+
+---
+
+## Stream Defaults
+
+Example of a default sstream configuration for PostgreSQL to BigQuery replication can be found on `cloud-datastream/postgresql/5-postgresql-default-stream.tf`
+
+This configuration will:
+
+- create a stream for ALL tables from the specified database
+- ALL tables will be backfilled upon stream creation
+- `WRITE` mode for new records will be `MERGE` for ALL tables
+
+> Note the `PostgreSQL` specifics in the source_config
+
+```tf
+    postgresql_source_config {
+      replication_slot = "dvdrental_slot"
+      publication      = "dvdrental_publication"
+      include_objects {
+        postgresql_schemas {
+          schema = "public"
+        }
+      }
+    }
+```
+
+---
+
 ## More info
 
-- https://docs.cloud.google.com/datastream/docs/configure-cloudsql-psql
+- <https://docs.cloud.google.com/datastream/docs/configure-cloudsql-psql>
 
-- https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication#configure-your-postgresql-instance
+- <https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication#configure-your-postgresql-instance>
 
-- https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication
+- <https://docs.cloud.google.com/sql/docs/postgres/replication/configure-logical-replication>
