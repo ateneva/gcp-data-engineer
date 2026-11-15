@@ -32,6 +32,7 @@ resource "null_resource" "dvdrental_import" {
     google_sql_database_instance.postgres_dvdrental_instance,
     google_sql_database.dvdrental_db,
     google_storage_bucket_iam_member.import_dvdrental_grant,
-    data.google_storage_bucket_object.dvdrental_restore
+    data.google_storage_bucket_object.dvdrental_restore,
+    null_resource.dvdrental_import
   ]
 }
