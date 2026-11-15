@@ -1,5 +1,5 @@
-stream_id: "sakila-to-bq-critical-stream"
-display_name: "sakila-to-bq-critical-stream"
+stream_id: "sakila-to-bq-merge-stream"
+display_name: "sakila-to-bq-merge-stream"
 location: "europe-west1"
 desired_state: "RUNNING"
 
@@ -12,7 +12,7 @@ source:
 
 destination:
   dataset_id: "projects/data-geeking-gcp/datasets/sakila_streaming"
-  write_mode: "append"
+  write_mode: "merge"
 
 backfill:
   enabled: true
