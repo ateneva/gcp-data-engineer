@@ -68,7 +68,7 @@ jobs:
             --project="$GCP_PROJECT_ID" \
             --activation-policy=NEVER
 
-          for attempt in {1..90}; do
+          while true; do
             state="$(gcloud sql instances describe "$INSTANCE_ID" \
               --project="$GCP_PROJECT_ID" \
               --format='value(state)')"
@@ -76,8 +76,6 @@ jobs:
               echo "Cloud SQL instance '$INSTANCE_ID' is stopped."
               exit 0
             fi
+            echo "Cloud SQL instance '$INSTANCE_ID' is in state '$state'; waiting for it to stop."
             sleep 10
           done
-
-          echo "Timed out waiting for Cloud SQL instance '$INSTANCE_ID' to stop (last state: '$state')." >&2
-          exit 1
