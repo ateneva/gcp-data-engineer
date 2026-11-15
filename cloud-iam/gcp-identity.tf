@@ -41,6 +41,12 @@ resource "google_project_iam_member" "github_datastream_admin" {
   member  = "serviceAccount:${google_service_account.github_gcp_actions.email}"
 }
 
+resource "google_project_iam_member" "github_cloudsql_admin" {
+  project = google_service_account.github_gcp_actions.project
+  role    = "roles/cloudsql.admin"
+  member  = "serviceAccount:${google_service_account.github_gcp_actions.email}"
+}
+
 output "gcp_identity_provider_name" {
   value       = google_iam_workload_identity_pool_provider.github_gcp_provider.name
   description = "The full identifier of the Workload Identity Pool Provider"
