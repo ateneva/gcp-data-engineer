@@ -72,7 +72,7 @@ jobs:
             --state=RUNNING \
             --update-mask=state
 
-          for attempt in {1..30}; do
+          while true; do
             state="$(gcloud datastream streams describe "$STREAM_ID" \
               --location="$LOCATION" \
               --project="$GCP_PROJECT_ID" \
@@ -81,8 +81,6 @@ jobs:
               echo "Stream '$STREAM_ID' is running."
               exit 0
             fi
+            echo "Stream '$STREAM_ID' is in state '$state'; waiting for it to run."
             sleep 10
           done
-
-          echo "Timed out waiting for stream '$STREAM_ID' to run (last state: '$state')." >&2
-          exit 1
