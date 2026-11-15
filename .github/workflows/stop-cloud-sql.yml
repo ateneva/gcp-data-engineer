@@ -54,7 +54,7 @@ jobs:
             --project="$GCP_PROJECT_ID" \
             --format='value(state)')"
 
-          if [[ "$state" == "SUSPENDED" ]]; then
+          if [[ "$state" == "SUSPENDED" || "$state" == "STOPPED" ]]; then
             echo "Cloud SQL instance '$INSTANCE_ID' is already stopped."
             exit 0
           fi
@@ -72,7 +72,7 @@ jobs:
             state="$(gcloud sql instances describe "$INSTANCE_ID" \
               --project="$GCP_PROJECT_ID" \
               --format='value(state)')"
-            if [[ "$state" == "SUSPENDED" ]]; then
+            if [[ "$state" == "SUSPENDED" || "$state" == "STOPPED" ]]; then
               echo "Cloud SQL instance '$INSTANCE_ID' is stopped."
               exit 0
             fi

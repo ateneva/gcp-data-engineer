@@ -45,7 +45,7 @@ jobs:
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
 
-      - name: Start Cloud SQL instance if suspended
+      - name: Start Cloud SQL instance if stopped
         shell: bash
         run: |
           set -euo pipefail
@@ -59,8 +59,8 @@ jobs:
             exit 0
           fi
 
-          if [[ "$state" != "SUSPENDED" ]]; then
-            echo "Cloud SQL instance '$INSTANCE_ID' is in state '$state'; expected 'SUSPENDED'." >&2
+          if [[ "$state" != "SUSPENDED" && "$state" != "STOPPED" ]]; then
+            echo "Cloud SQL instance '$INSTANCE_ID' is in state '$state'; expected 'SUSPENDED' or 'STOPPED'." >&2
             exit 1
           fi
 
