@@ -15,4 +15,4 @@ destination:
   write_mode: "merge"
 
 backfill:
-  enabled: true
+  enabled: false
