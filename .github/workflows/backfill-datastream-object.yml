@@ -8,7 +8,7 @@ on:
         required: true
         type: string
       object_id:
-        description: Source table name (for example, customer)
+        description: Source table name (for example, customer or public.customer)
         required: true
         type: string
       location:
@@ -78,7 +78,7 @@ jobs:
             while IFS= read -r name; do
               object_names+=("$name")
             done < <(jq -r --arg table "$OBJECT_ID" \
-              '.streamObjects[]? | select([.sourceObject | .. | objects | .table? // empty] | any(. == $table)) | .name' \
+              '.streamObjects[]? | select([.sourceObject | .. | objects | select(.table? == $table or ((.schema? // "") + "." + (.table? // "")) == $table)] | length > 0) | .name' \
               <<< "$response")
 
             page_token="$(jq -r '.nextPageToken // empty' <<< "$response")"
