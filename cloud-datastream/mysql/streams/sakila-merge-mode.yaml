@@ -1,0 +1,18 @@
+stream_id: "sakila-to-bq-merge-stream"
+display_name: "sakila-to-bq-merge-stream"
+location: "europe-west1"
+desired_state: "RUNNING"
+
+source:
+  connection: "sakila-mysql"
+  database: "sakila"
+  tables:
+    - "customer"
+    - "payment"
+
+destination:
+  dataset_id: "projects/data-geeking-gcp/datasets/sakila_streaming"
+  write_mode: "merge"
+
+backfill:
+  enabled: false

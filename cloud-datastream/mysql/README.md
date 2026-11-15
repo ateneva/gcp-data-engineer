@@ -51,20 +51,34 @@ roles/bigquery.dataEditor
 roles/datastream.admin
 ```
 
-- datastream connection profile and MySQL database connection
+- Datastream connection profiles are defined by YAML files in
+  `cloud-datastream/mysql/connections/`. Each file creates one MySQL profile.
+  The filename without `.yaml` is the key used for credentials and Terraform
+  references (for example, `sakila.yaml` is keyed as `sakila`).
 
-  - Example of a MySQL connection profile can be found on `cloud-datastream/mysql/3-mysql-stream-connection.tf`
+  - Replace the sample hostname and copy `sakila.yaml` to add another
+    connection, then set its profile ID, display name, location, hostname, and
+    port.
+  - Supply credentials through the sensitive `mysql_connection_credentials`
+    Terraform variable, keyed by each YAML filename. Supply it through an
+    untracked tfvars file or a secrets pipeline; do not put passwords in YAML.
+  - Set `source.connection` in `mysql-stream-config.yaml` for the default
+    stream. Each custom stream selects its connection through `source.connection`
+    in its stream YAML file.
 
-> Note the `MySQL` specifics in the `mysql_profile` configuration below
-
-```tf
-  mysql_profile {
-    hostname = var.mysql_hostname
-    port     = 3306
-    username = var.mysql_username
-    password = var.mysql_password
+```hcl
+mysql_connection_credentials = {
+  sakila = {
+    username = "datastream"
+    password = "<set-through-a-secret-safe-variable-source>"
   }
+}
 ```
+
+- Custom stream definitions are loaded from
+  `cloud-datastream/mysql/streams/*.yaml`. Copy `streams/sakila.yaml` to define
+  another stream; each file creates one stream and uses its filename (without
+  `.yaml`) as the Terraform instance key.
 
 ---
 

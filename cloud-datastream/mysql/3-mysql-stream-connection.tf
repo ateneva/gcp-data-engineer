@@ -1,14 +1,22 @@
 
-// 3. Create Datastream connection profile for MySQL (Cloud SQL)
+locals {
+  mysql_connections = {
+    for file in fileset(path.module, "connections/*.yaml") :
+    trimsuffix(basename(file), ".yaml") => yamldecode(file("${path.module}/${file}"))
+  }
+}
+
 resource "google_datastream_connection_profile" "mysql_cp" {
-  connection_profile_id = "sakila-mysql"
-  display_name          = "sakila-mysql"
-  location              = "europe-west1"
+  for_each = local.mysql_connections
+
+  connection_profile_id = each.value.connection_profile_id
+  display_name          = each.value.display_name
+  location              = each.value.location
 
   mysql_profile {
-    hostname = var.mysql_hostname
-    port     = 3306
-    username = var.mysql_username
-    password = var.mysql_password
+    hostname = each.value.hostname
+    port     = each.value.port
+    username = each.value.username
+    password = var.mysql_connection_credentials[each.key].password
   }
 }
