@@ -4,12 +4,6 @@
   - [Resources and data flow](#resources-and-data-flow)
   - [Verify the database creation](#verify-the-database-creation)
   - [Connect via `sakilla` user](#connect-via-sakilla-user)
-  - [Setting Up a Datastream to BigQuery](#setting-up-a-datastream-to-bigquery)
-    - [Enable Datastream API](#enable-datastream-api)
-    - [Set up Connection Profiles](#set-up-connection-profiles)
-    - [Create Stream](#create-stream)
-    - [Set up permissiions for the MySQL user](#set-up-permissiions-for-the-mysql-user)
-    - [Deployment](#deployment)
   - [Outputs and teardown](#outputs-and-teardown)
 
 This Terraform configuration creates a Cloud SQL for MySQL 8.4 instance, loads
