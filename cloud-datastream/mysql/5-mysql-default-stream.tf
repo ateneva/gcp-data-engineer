@@ -9,7 +9,7 @@ resource "google_datastream_stream" "sakila_to_bq" {
   desired_state = "RUNNING"
 
   source_config {
-    source_connection_profile = google_datastream_connection_profile.mysql_cp.id
+    source_connection_profile = google_datastream_connection_profile.mysql_cp["sakila-mysql"].id
 
     mysql_source_config {
       include_objects {

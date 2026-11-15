@@ -1,14 +1,7 @@
-variable "mysql_hostname" {
-  description = "host address of the mysql database"
-  type        = string
-}
-
-variable "mysql_username" {
-  description = "user for connecting to the mysql database"
-  type        = string
-}
-
-variable "mysql_password" {
-  description = "password for connecting to the mysql database"
-  type        = string
+variable "mysql_connection_credentials" {
+  description = "MySQL usernames and passwords, keyed by connection YAML filename without the extension"
+  type = map(object({
+    password = string
+  }))
+  sensitive = true
 }

@@ -1,0 +1,6 @@
+connection_profile_id: "sakila-mysql"
+display_name: "sakila-mysql"
+location: "europe-west1"
+hostname: "REPLACE_WITH_MYSQL_HOSTNAME"
+port: 3306
+username: "REPLACE_WITH_MYSQL_USERNAME"

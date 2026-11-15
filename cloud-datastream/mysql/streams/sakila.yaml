@@ -4,6 +4,7 @@ location: "europe-west1"
 desired_state: "RUNNING"
 
 source:
+  connection: "sakila-mysql"
   database: "sakila"
   tables:
     - "customer"
@@ -11,7 +12,7 @@ source:
 
 destination:
   dataset_id: "projects/data-geeking-gcp/datasets/sakila_streaming"
-  write_mode: "append" # Change to "merge" if you want standard upserts/deletes
+  write_mode: "append"
 
 backfill:
-  enabled: true # Set to false if you want to skip historical backfill completely
+  enabled: true
