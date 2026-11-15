@@ -56,4 +56,9 @@ resource "google_datastream_stream" "mysql_to_bq" {
     for_each = try(local.config.backfill.enabled, false) ? [1] : []
     content {}
   }
+
+  dynamic "backfill_none" {
+    for_each = try(local.config.backfill.enabled, false) ? [] : [1]
+    content {}
+  }
 }
