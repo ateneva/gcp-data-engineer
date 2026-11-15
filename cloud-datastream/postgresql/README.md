@@ -23,9 +23,9 @@
 
 ```sql
 --- 1. Create replication user
-DO $$ 
+DO $$
 BEGIN
-    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'datastream_user') 
+    IF NOT EXISTS (SELECT FROM pg_catalog.pg_roles WHERE rolname = 'datastream_user')
     THEN
         CREATE USER datastream_user WITH REPLICATION PASSWORD 'your_secure_password';
     END IF

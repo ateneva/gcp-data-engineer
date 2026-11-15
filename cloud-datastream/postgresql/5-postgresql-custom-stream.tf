@@ -13,26 +13,26 @@ resource "google_datastream_stream" "postgresql_to_bq" {
   source_config {
     source_connection_profile = google_datastream_connection_profile.postgres_cp.id
 
-  postgresql_source_config {
-        # PostgreSQL-specific mandatory parameters for Datastream
-        replication_slot = local.postgresql_config.source.replication_slot
-        publication      = local.postgresql_config.source.publication
+    postgresql_source_config {
+      # PostgreSQL-specific mandatory parameters for Datastream
+      replication_slot = local.postgresql_config.source.replication_slot
+      publication      = local.postgresql_config.source.publication
 
-        include_objects {
-          postgresql_schemas {
-            # PostgreSQL organizes objects by schema rather than database
-            schema = lookup(local.postgresql_config.source, "schema", "public")
+      include_objects {
+        postgresql_schemas {
+          # PostgreSQL organizes objects by schema rather than database
+          schema = lookup(local.postgresql_config.source, "schema", "public")
 
-            # Dynamically loop through the tables listed in the YAML file
-            dynamic "postgresql_tables" {
-              for_each = local.postgresql_config.source.tables
-              content {
-                table = postgresql_tables.value
-              }
+          # Dynamically loop through the tables listed in the YAML file
+          dynamic "postgresql_tables" {
+            for_each = local.postgresql_config.source.tables
+            content {
+              table = postgresql_tables.value
             }
           }
         }
       }
+    }
   }
 
   destination_config {
